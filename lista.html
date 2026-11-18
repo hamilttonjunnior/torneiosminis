@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Atletas Confirmados | Mini-Voleibol</title>
+    <style>
+        :root {
+            --primary: #0f172a;
+            --accent: #2563eb;
+            --bg: #f1f5f9;
+            --card: #ffffff;
+            --text: #1e293b;
+            --muted: #64748b;
+            --border: #e2e8f0;
+            --success: #16a34a;
+            --success-bg: #dcfce7;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
+        body { background: var(--bg); color: var(--text); line-height: 1.5; padding-bottom: 40px; }
+
+        header {
+            background: var(--primary); color: white; padding: 18px 20px;
+            display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .brand { display: flex; align-items: center; gap: 14px; }
+        .brand img {
+            height: 52px; width: 52px; object-fit: contain; background: white;
+            border-radius: 10px; padding: 4px;
+        }
+        .brand h1 { font-size: 1.15rem; font-weight: 700; }
+        .brand span { font-size: 0.85rem; color: #94a3b8; display: block; }
+
+        .btn-voltar-pais {
+            color: white; background: var(--accent); text-decoration: none; font-size: 0.85rem;
+            padding: 8px 14px; border-radius: 8px; transition: 0.2s; font-weight: 600;
+        }
+        .btn-voltar-pais:hover { background: #1d4ed8; }
+
+        .container { max-width: 820px; margin: 24px auto; padding: 0 16px; }
+
+        .filter-card {
+            background: var(--card); border-radius: 14px; padding: 20px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05); border: 1px solid var(--border);
+            margin-bottom: 20px;
+        }
+        .filter-grid { display: grid; grid-template-columns: 180px 1fr; gap: 12px; }
+        @media (max-width: 600px) { .filter-grid { grid-template-columns: 1fr; } }
+
+        label { display: block; font-size: 0.82rem; font-weight: 600; margin-bottom: 5px; color: var(--muted); text-transform: uppercase; }
+        select {
+            width: 100%; padding: 11px 12px; border: 1px solid var(--border); border-radius: 10px;
+            font-size: 0.95rem; background: #fff; color: var(--text);
+        }
+        select:focus { outline: none; border-color: var(--accent); }
+
+        .torneio-block {
+            background: var(--card); border-radius: 14px; padding: 22px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05); border: 1px solid var(--border);
+            margin-bottom: 20px;
+        }
+
+        .tb-header {
+            display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 10px;
+            padding-bottom: 14px; border-bottom: 1px solid var(--border); margin-bottom: 16px;
+        }
+        .tb-title-area h2 { font-size: 1.12rem; color: var(--primary); margin-bottom: 4px; }
+        .tb-meta { font-size: 0.85rem; color: var(--muted); }
+
+        .badge {
+            padding: 4px 10px; border-radius: 999px; font-size: 0.75rem; font-weight: 700; display: inline-block; margin-bottom: 6px;
+        }
+        .badge-a { background: #dbeafe; color: #1e40af; }
+        .badge-b { background: #fef3c7; color: #92400e; }
+
+        .count-pill {
+            background: var(--success-bg); color: #15803d; font-weight: 700; font-size: 0.85rem;
+            padding: 6px 12px; border-radius: 999px; display: inline-flex; align-items: center; gap: 6px;
+        }
+
+        .atletas-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 10px;
+        }
+        .atleta-chip {
+            display: flex; align-items: center; gap: 10px; padding: 10px 14px;
+            background: #f8fafc; border: 1px solid var(--border); border-radius: 10px;
+            font-weight: 600; font-size: 0.92rem; color: var(--text);
+        }
+        .atleta-num {
+            background: var(--primary); color: white; width: 24px; height: 24px;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-size: 0.75rem; font-weight: 700; flex-shrink: 0;
+        }
+
+        .btn-copy {
+            background: #f1f5f9; border: 1px solid var(--border); color: var(--text);
+            padding: 6px 12px; border-radius: 8px; font-size: 0.8rem; font-weight: 600;
+            cursor: pointer; transition: 0.2s;
+        }
+        .btn-copy:hover { background: #e2e8f0; }
+
+        .empty-state {
+            text-align: center; padding: 30px 16px; color: var(--muted); font-size: 0.92rem;
+            background: #f8fafc; border-radius: 10px; border: 1px dashed var(--border);
+        }
+
+        .toast {
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+            background: var(--primary); color: white; padding: 10px 20px; border-radius: 999px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2); display: none; z-index: 2000; font-size: 0.88rem; font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="brand">
+            <img src="logo.png" alt="Logo" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2280%22>🏐</text></svg>'">
+            <div>
+                <h1>Atletas Confirmados</h1>
+                <span>Lista Oficial de Participação • Mini-Voleibol</span>
+            </div>
+        </div>
+        <a href="pais.html" class="btn-voltar-pais">✍️ Autorizar Presença</a>
+    </header>
+
+    <div class="container">
+        <div class="filter-card">
+            <div class="filter-grid">
+                <div>
+                    <label for="filtro-escalao">Escalão</label>
+                    <select id="filtro-escalao" onchange="atualizarFiltroTorneios()">
+                        <option value="TODOS">Todos os Escalões</option>
+                        <option value="Minis A">Minis A</option>
+                        <option value="Minis B">Minis B</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="filtro-torneio">Competição / Data</label>
+                    <select id="filtro-torneio" onchange="renderizarListaPublica()">
+                        <option value="PROXIMOS">Torneios com Convocatória Ativa</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div id="conteudo-listas">
+            <div class="empty-state">A carregar listas confirmadas...</div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import {
+            getFirestore, collection, onSnapshot, query, orderBy
+        } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDHrazgKg6ezFPMyclQyc8keXXGV6QGG38",
+            authDomain: "inscricoesminis.firebaseapp.com",
+            projectId: "inscricoesminis",
+            storageBucket: "inscricoesminis.firebasestorage.app",
+            messagingSenderId: "1005618476458",
+            appId: "1:1005618476458:web:0675310fae2bfd989ae7d3",
+            measurementId: "G-6QYJ3MC92P"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        let atletas = [];
+        let torneios = [];
+        let inscricoes = [];
+
+        window.mostrarToast = (msg) => {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.style.display = 'block';
+            setTimeout(() => t.style.display = 'none', 2800);
+        };
+
+        onSnapshot(query(collection(db, "atletas"), orderBy("nome")), (snap) => {
+            atletas = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            renderizarListaPublica();
+        });
+
+        onSnapshot(query(collection(db, "torneios"), orderBy("data")), (snap) => {
+            torneios = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            atualizarFiltroTorneios();
+        });
+
+        onSnapshot(collection(db, "inscricoes"), (snap) => {
+            inscricoes = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            atualizarFiltroTorneios();
+        });
+
+        window.atualizarFiltroTorneios = () => {
+            const esc = document.getElementById('filtro-escalao').value;
+            const selTorneio = document.getElementById('filtro-torneio');
+            const selecionadoAnterior = selTorneio.value;
+
+            // Mostra apenas torneios que tenham pelo menos 1 convocatória criada
+            const torneiosComInscricao = torneios.filter(t => {
+                const matchEsc = esc === "TODOS" || t.escalao === esc;
+                const temConvocados = inscricoes.some(i => i.torneioId === t.id);
+                return matchEsc && temConvocados;
+            });
+
+            selTorneio.innerHTML = `<option value="TODOS_ATIVOS">Todos os Torneios Convocados (${torneiosComInscricao.length})</option>` +
+                torneiosComInscricao.map(t =>
+                    `<option value="${t.id}">[${t.escalao}] ${formatarData(t.data)} - ${t.nome}</option>`
+                ).join('');
+
+            if (selecionadoAnterior && (selecionadoAnterior === "TODOS_ATIVOS" || torneiosComInscricao.some(t => t.id === selecionadoAnterior))) {
+                selTorneio.value = selecionadoAnterior;
+            }
+
+            renderizarListaPublica();
+        };
+
+        window.renderizarListaPublica = () => {
+            const esc = document.getElementById('filtro-escalao').value;
+            const torneioFiltro = document.getElementById('filtro-torneio').value;
+            const container = document.getElementById('conteudo-listas');
+
+            let torneiosExibir = torneios.filter(t => {
+                const matchEsc = esc === "TODOS" || t.escalao === esc;
+                const temConvocados = inscricoes.some(i => i.torneioId === t.id);
+                const matchTorneio = torneioFiltro === "TODOS_ATIVOS" || t.id === torneioFiltro;
+                return matchEsc && temConvocados && matchTorneio;
+            });
+
+            if (torneiosExibir.length === 0) {
+                container.innerHTML = `<div class="empty-state">Ainda não existem convocatórias abertas para este filtro.</div>`;
+                return;
+            }
+
+            container.innerHTML = torneiosExibir.map(t => {
+                // Apenas atletas com status 'autorizado'
+                const idsAutorizados = inscricoes
+                    .filter(i => i.torneioId === t.id && i.status === 'autorizado')
+                    .map(i => i.atletaId);
+
+                const atletasConfirmados = atletas
+                    .filter(a => idsAutorizados.includes(a.id))
+                    .sort((a, b) => a.nome.localeCompare(b.nome));
+
+                const totalPendentes = inscricoes.filter(i => i.torneioId === t.id && i.status === 'pendente').length;
+
+                return `
+                    <div class="torneio-block">
+                        <div class="tb-header">
+                            <div class="tb-title-area">
+                                <span class="badge ${t.escalao === 'Minis A' ? 'badge-a' : 'badge-b'}">${t.escalao}</span>
+                                <h2>${t.nome}</h2>
+                                <div class="tb-meta">
+                                    📅 <strong>Data:</strong> ${formatarData(t.data)} &nbsp;•&nbsp; 📍 <strong>Local:</strong> ${t.pavilhao}
+                                </div>
+                            </div>
+                            <div style="display:flex; flex-direction:column; align-items:flex-end; gap:8px;">
+                                <span class="count-pill">✅ ${atletasConfirmados.length} Confirmado${atletasConfirmados.length === 1 ? '' : 's'}</span>
+                                ${atletasConfirmados.length > 0 ? `<button class="btn-copy" onclick="copiarListaWhatsApp('${t.id}')">📋 Copiar p/ WhatsApp</button>` : ''}
+                            </div>
+                        </div>
+
+                        ${atletasConfirmados.length === 0 ? `
+                            <div class="empty-state">Ainda nenhum atleta confirmado para este torneio (${totalPendentes} a aguardar autorização).</div>
+                        ` : `
+                            <div class="atletas-grid">
+                                ${atletasConfirmados.map((a, index) => `
+                                    <div class="atleta-chip">
+                                        <span class="atleta-num">${index + 1}</span>
+                                        <span>${a.nome}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        `}
+                    </div>
+                `;
+            }).join('');
+        };
+
+        window.copiarListaWhatsApp = (torneioId) => {
+            const t = torneios.find(x => x.id === torneioId);
+            if (!t) return;
+
+            const idsAutorizados = inscricoes
+                .filter(i => i.torneioId === torneioId && i.status === 'autorizado')
+                .map(i => i.atletaId);
+
+            const atletasConfirmados = atletas
+                .filter(a => idsAutorizados.includes(a.id))
+                .sort((a, b) => a.nome.localeCompare(b.nome));
+
+            let texto = `🏐 *${t.escalao} - ${t.nome}*\n`;
+            texto += `📅 Data: ${formatarData(t.data)} | 📍 ${t.pavilhao}\n\n`;
+            texto += `*Atletas Confirmados (${atletasConfirmados.length}):*\n`;
+            atletasConfirmados.forEach((a, idx) => {
+                texto += `${idx + 1}. ${a.nome}\n`;
+            });
+
+            navigator.clipboard.writeText(texto).then(() => {
+                mostrarToast("📋 Lista copiada para o WhatsApp!");
+            });
+        };
+
+        function formatarData(iso) {
+            if (!iso) return "-";
+            const [y, m, d] = iso.split('-');
+            return `${d}/${m}/${y}`;
+        }
+    </script>
+</body>
+</html>
