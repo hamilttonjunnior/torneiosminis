@@ -6,14 +6,14 @@
     <title>Gestão Mini-Voleibol | Administração</title>
     <style>
         :root {
-            --primary: #0f172a;
-            --accent: #2563eb;
-            --accent-hover: #1d4ed8;
-            --bg: #f1f5f9;
+            --black: #0a0a0a;
+            --dark-gray: #1f2937;
+            --mid-gray: #4b5563;
+            --light-gray: #9ca3af;
+            --bg: #f4f4f5;
             --card: #ffffff;
-            --text: #1e293b;
-            --muted: #64748b;
-            --border: #e2e8f0;
+            --text: #111827;
+            --border: #d4d4d8;
             --success: #16a34a;
             --warning: #d97706;
             --danger: #dc2626;
@@ -24,46 +24,47 @@
 
         /* Tela de Bloqueio */
         #login-overlay {
-            position: fixed; inset: 0; background: var(--primary);
+            position: fixed; inset: 0; background: var(--black);
             display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 20px;
         }
         .login-box {
             background: var(--card); padding: 32px; border-radius: 16px; width: 100%; max-width: 380px;
-            text-align: center; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.3);
+            text-align: center; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5); border: 1px solid var(--dark-gray);
         }
         .login-box img { max-height: 75px; margin-bottom: 16px; object-fit: contain; }
-        .login-box h2 { margin-bottom: 8px; font-size: 1.25rem; }
-        .login-box p { color: var(--muted); font-size: 0.9rem; margin-bottom: 20px; }
+        .login-box h2 { margin-bottom: 6px; font-size: 1.25rem; color: var(--black); }
+        .login-box p { color: var(--mid-gray); font-size: 0.9rem; margin-bottom: 20px; }
 
         /* Header */
         header {
-            background: var(--primary); color: white; padding: 16px 24px;
+            background: var(--black); color: white; padding: 16px 24px;
             display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-bottom: 3px solid var(--dark-gray);
         }
         .brand { display: flex; align-items: center; gap: 14px; }
         .brand img {
             height: 52px; width: 52px; object-fit: contain; background: white;
             border-radius: 10px; padding: 4px;
         }
-        .brand h1 { font-size: 1.2rem; font-weight: 700; }
-        .brand span { font-size: 0.85rem; color: #94a3b8; display: block; }
+        .brand h1 { font-size: 1.2rem; font-weight: 700; letter-spacing: -0.3px; }
+        .brand span { font-size: 0.85rem; color: var(--light-gray); display: block; }
 
         .nav-links { display: flex; gap: 8px; flex-wrap: wrap; }
         .nav-links a {
-            color: #cbd5e1; text-decoration: none; font-size: 0.85rem; padding: 6px 12px;
-            border-radius: 6px; border: 1px solid #334155; transition: 0.2s;
+            color: #f4f4f5; text-decoration: none; font-size: 0.85rem; padding: 7px 14px;
+            border-radius: 8px; border: 1px solid #3f3f46; background: #18181b; transition: 0.2s; font-weight: 600;
         }
-        .nav-links a:hover { background: #1e293b; color: white; }
+        .nav-links a:hover { background: white; color: var(--black); border-color: white; }
 
         /* Container & Tabs */
         .container { max-width: 1150px; margin: 24px auto; padding: 0 16px; }
-        .tabs { display: flex; gap: 8px; margin-bottom: 20px; border-bottom: 2px solid var(--border); padding-bottom: 8px; }
+        .tabs { display: flex; gap: 8px; margin-bottom: 20px; border-bottom: 2px solid var(--border); padding-bottom: 10px; }
         .tab-btn {
-            background: transparent; border: none; padding: 10px 18px; font-size: 0.95rem;
-            font-weight: 600; color: var(--muted); cursor: pointer; border-radius: 8px; transition: 0.2s;
+            background: transparent; border: 1px solid transparent; padding: 10px 18px; font-size: 0.95rem;
+            font-weight: 600; color: var(--mid-gray); cursor: pointer; border-radius: 8px; transition: 0.2s;
         }
-        .tab-btn.active { background: var(--accent); color: white; }
+        .tab-btn:hover { background: #e4e4e7; color: var(--black); }
+        .tab-btn.active { background: var(--black); color: white; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
 
@@ -73,64 +74,73 @@
 
         .card {
             background: var(--card); border-radius: 12px; padding: 20px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.08); border: 1px solid var(--border);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06); border: 1px solid var(--border);
         }
-        .card h2 { font-size: 1.1rem; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; }
+        .card h2 {
+            font-size: 1.08rem; margin-bottom: 16px; display: flex; align-items: center;
+            justify-content: space-between; color: var(--black); border-bottom: 1px solid #f4f4f5; padding-bottom: 10px;
+        }
 
         /* Formulários */
         .form-group { margin-bottom: 14px; }
-        label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 5px; color: var(--text); }
+        label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 5px; color: var(--dark-gray); }
         input, select {
             width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px;
             font-size: 0.95rem; background: #fff; color: var(--text);
         }
-        input:focus, select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
+        input:focus, select:focus { outline: none; border-color: var(--black); box-shadow: 0 0 0 3px rgba(0,0,0,0.08); }
         .row-2 { display: grid; grid-template-columns: 110px 1fr; gap: 8px; }
 
         button {
             cursor: pointer; border: none; border-radius: 8px; font-weight: 600; font-size: 0.9rem;
             padding: 10px 16px; transition: 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
         }
-        .btn-primary { background: var(--accent); color: white; width: 100%; }
-        .btn-primary:hover { background: var(--accent-hover); }
-        .btn-secondary { background: #e2e8f0; color: var(--text); }
-        .btn-secondary:hover { background: #cbd5e1; }
-        .btn-success { background: var(--success); color: white; }
-        .btn-danger { background: #fee2e2; color: var(--danger); padding: 6px 10px; font-size: 0.8rem; }
-        .btn-danger:hover { background: var(--danger); color: white; }
-        .btn-sm { padding: 6px 10px; font-size: 0.8rem; }
+        .btn-primary { background: var(--black); color: white; width: 100%; }
+        .btn-primary:hover { background: var(--dark-gray); }
+        .btn-secondary { background: #e4e4e7; color: var(--black); border: 1px solid #d4d4d8; }
+        .btn-secondary:hover { background: #d4d4d8; }
+        .btn-dark-outline { background: white; color: var(--black); border: 1px solid var(--black); }
+        .btn-dark-outline:hover { background: var(--black); color: white; }
+        .btn-danger { background: #fafafa; color: var(--danger); border: 1px solid #fca5a5; padding: 6px 10px; font-size: 0.8rem; }
+        .btn-danger:hover { background: var(--danger); color: white; border-color: var(--danger); }
+        .btn-sm { padding: 6px 11px; font-size: 0.8rem; }
 
         /* Tabelas e Badges */
         .table-wrap { overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
         th, td { text-align: left; padding: 12px 10px; border-bottom: 1px solid var(--border); }
-        th { background: #f8fafc; font-weight: 600; color: var(--muted); font-size: 0.8rem; text-transform: uppercase; }
+        th { background: #fafafa; font-weight: 700; color: var(--dark-gray); font-size: 0.78rem; text-transform: uppercase; }
         
         .badge {
             padding: 3px 9px; border-radius: 999px; font-size: 0.75rem; font-weight: 700; display: inline-block;
         }
-        .badge-a { background: #dbeafe; color: #1e40af; }
-        .badge-b { background: #fef3c7; color: #92400e; }
-        .status-pendente { background: #fef3c7; color: #b45309; }
-        .status-autorizado { background: #dcfce7; color: #15803d; }
-        .status-recusado { background: #fee2e2; color: #b91c1c; }
+        .badge-a { background: var(--black); color: white; }
+        .badge-b { background: #e4e4e7; color: var(--black); border: 1px solid #a1a1aa; }
+        .status-pendente { background: #fef3c7; color: #92400e; }
+        .status-autorizado { background: #dcfce7; color: #166534; }
+        .status-recusado { background: #fee2e2; color: #991b1b; }
 
         /* Lista de Convocatória */
         .convocatoria-item {
             display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;
-            padding: 12px; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 8px; background: #fafafa;
+            padding: 12px 14px; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 8px; background: #fafafa;
         }
-        .convocatoria-info strong { display: block; font-size: 0.95rem; }
-        .convocatoria-info small { color: var(--muted); }
-        .status-actions { display: flex; gap: 6px; align-items: center; }
+        .convocatoria-info strong { display: block; font-size: 0.95rem; color: var(--black); }
+        .convocatoria-info small { color: var(--mid-gray); }
+        .status-actions { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
 
         .filter-bar { display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
         .filter-bar input, .filter-bar select { width: auto; flex: 1; min-width: 150px; }
 
+        .torneio-banner {
+            display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;
+            background: #fafafa; padding: 14px; border-radius: 10px; margin-bottom: 16px; border: 1px solid var(--border);
+        }
+
         .toast {
-            position: fixed; bottom: 20px; right: 20px; background: var(--primary); color: white;
-            padding: 12px 20px; border-radius: 8px; box-shadow: 0 10px 15px rgba(0,0,0,0.2);
-            display: none; z-index: 2000; font-size: 0.9rem;
+            position: fixed; bottom: 20px; right: 20px; background: var(--black); color: white;
+            padding: 12px 20px; border-radius: 8px; box-shadow: 0 10px 15px rgba(0,0,0,0.3);
+            display: none; z-index: 2000; font-size: 0.9rem; border: 1px solid var(--dark-gray);
         }
     </style>
 </head>
@@ -172,13 +182,14 @@
         <!-- ABA 1: TORNEIOS E CONVOCATÓRIAS -->
         <div id="tab-convocatorias" class="tab-content active">
             <div class="grid-2">
-                <!-- Coluna Esquerda: Cadastro de Torneio -->
+                <!-- Coluna Esquerda: Cadastro / Edição de Torneio -->
                 <div class="card">
                     <h2>
-                        <span>Novo Torneio</span>
-                        <button class="btn-secondary btn-sm" onclick="importarCalendarioAVB()" title="Carregar todas as datas da tabela AVB">📥 Importar AVB</button>
+                        <span id="form-torneio-titulo">Novo Torneio</span>
+                        <button type="button" class="btn-secondary btn-sm" onclick="importarCalendarioAVB()" title="Carregar todas as datas da tabela AVB">📥 Importar AVB</button>
                     </h2>
                     <form id="form-torneio">
+                        <input type="hidden" id="t-id">
                         <div class="form-group">
                             <label>Escalão</label>
                             <select id="t-escalao" required>
@@ -202,7 +213,10 @@
                             <label>Pavilhão / Local</label>
                             <input type="text" id="t-pavilhao" placeholder="Ex: Municipal de Adães">
                         </div>
-                        <button type="submit" class="btn-primary">Guardar Torneio</button>
+                        <div style="display:flex; gap:8px;">
+                            <button type="submit" class="btn-primary" id="btn-salvar-torneio">Guardar Torneio</button>
+                            <button type="button" class="btn-secondary" id="btn-cancelar-torneio" style="display:none;" onclick="limparFormTorneio()">Cancelar</button>
+                        </div>
                     </form>
                 </div>
 
@@ -217,18 +231,19 @@
                     </div>
 
                     <div id="painel-torneio-detalhes" style="display:none;">
-                        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; background:#f8fafc; padding:12px; border-radius:8px; margin-bottom:16px; border:1px solid var(--border);">
+                        <div class="torneio-banner">
                             <div>
-                                <strong id="info-t-titulo" style="font-size:1rem;"></strong>
-                                <div id="info-t-sub" style="font-size:0.85rem; color:var(--muted);"></div>
+                                <strong id="info-t-titulo" style="font-size:1rem; color:var(--black);"></strong>
+                                <div id="info-t-sub" style="font-size:0.85rem; color:var(--mid-gray); margin-top:2px;"></div>
                             </div>
-                            <div style="display:flex; gap:8px;">
-                                <button class="btn-success btn-sm" onclick="convocarTodosDoEscalao()">+ Convocar Todos do Escalão</button>
-                                <button class="btn-danger" onclick="excluirTorneioAtual()">Excluir Torneio</button>
+                            <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                                <button type="button" class="btn-dark-outline btn-sm" onclick="convocarTodosDoEscalao()">+ Convocar Todos</button>
+                                <button type="button" class="btn-secondary btn-sm" onclick="editarTorneioAtual()">✏️ Editar</button>
+                                <button type="button" class="btn-danger" onclick="excluirTorneioAtual()">🗑️ Excluir</button>
                             </div>
                         </div>
 
-                        <div style="display:flex; gap:12px; margin-bottom:14px; font-size:0.85rem; font-weight:600;">
+                        <div style="display:flex; gap:14px; margin-bottom:14px; font-size:0.85rem; font-weight:600; flex-wrap:wrap;">
                             <span style="color:var(--success);">✅ Autorizados: <b id="count-aut">0</b></span>
                             <span style="color:var(--warning);">⏳ Pendentes: <b id="count-pen">0</b></span>
                             <span style="color:var(--danger);">❌ Recusados: <b id="count-rec">0</b></span>
@@ -266,7 +281,7 @@
                                 </select>
                                 <input type="text" id="a-doc-num" placeholder="Número do documento" required>
                             </div>
-                            <small style="color:var(--muted); font-size:0.75rem;">Os últimos 4 dígitos servirão para os pais validarem a autorização.</small>
+                            <small style="color:var(--mid-gray); font-size:0.75rem;">Os últimos 4 dígitos servirão para os pais validarem a autorização.</small>
                         </div>
                         <div class="form-group">
                             <label>Escalão</label>
@@ -337,9 +352,9 @@
         // Estado em memória
         let atletas = [];
         let torneios = [];
-        let inscricoes = []; // { id: `${torneioId}_${atletaId}`, torneioId, atletaId, status: 'pendente'|'autorizado'|'recusado' }
+        let inscricoes = [];
 
-        // Senha simples (pode alterar aqui)
+        // Senha simples
         const SENHA_ADMIN = "minis2026";
         window.verificarSenha = () => {
             const val = document.getElementById('admin-pass').value;
@@ -468,9 +483,10 @@
             `).join('');
         };
 
-        // ================= GESTÃO DE TORNEIOS =================
+        // ================= GESTÃO DE TORNEIOS (CRIAR / EDITAR) =================
         document.getElementById('form-torneio').addEventListener('submit', async (e) => {
             e.preventDefault();
+            const id = document.getElementById('t-id').value;
             const dados = {
                 escalao: document.getElementById('t-escalao').value,
                 nome: document.getElementById('t-nome').value.trim(),
@@ -478,14 +494,51 @@
                 dataLimite: document.getElementById('t-limite').value,
                 pavilhao: document.getElementById('t-pavilhao').value.trim() || "A definir"
             };
-            const docRef = await addDoc(collection(db, "torneios"), dados);
-            document.getElementById('form-torneio').reset();
-            mostrarToast("Torneio adicionado!");
-            setTimeout(() => {
-                document.getElementById('select-torneio-ativo').value = docRef.id;
-                renderizarConvocatoria();
-            }, 400);
+
+            try {
+                if (id) {
+                    await updateDoc(doc(db, "torneios", id), dados);
+                    mostrarToast("Torneio atualizado com sucesso!");
+                    limparFormTorneio();
+                } else {
+                    const docRef = await addDoc(collection(db, "torneios"), dados);
+                    limparFormTorneio();
+                    mostrarToast("Torneio adicionado!");
+                    setTimeout(() => {
+                        document.getElementById('select-torneio-ativo').value = docRef.id;
+                        renderizarConvocatoria();
+                    }, 400);
+                }
+            } catch (err) {
+                alert("Erro ao guardar torneio: " + err.message);
+            }
         });
+
+        window.editarTorneioAtual = () => {
+            const id = document.getElementById('select-torneio-ativo').value;
+            const t = torneios.find(x => x.id === id);
+            if (!t) return;
+
+            document.getElementById('t-id').value = t.id;
+            document.getElementById('t-escalao').value = t.escalao;
+            document.getElementById('t-nome').value = t.nome;
+            document.getElementById('t-data').value = t.data;
+            document.getElementById('t-limite').value = t.dataLimite || "";
+            document.getElementById('t-pavilhao').value = t.pavilhao === "A definir" ? "" : t.pavilhao;
+
+            document.getElementById('form-torneio-titulo').textContent = "Editar Torneio";
+            document.getElementById('btn-salvar-torneio').textContent = "Atualizar Torneio";
+            document.getElementById('btn-cancelar-torneio').style.display = "inline-flex";
+            document.getElementById('t-nome').focus();
+        };
+
+        window.limparFormTorneio = () => {
+            document.getElementById('form-torneio').reset();
+            document.getElementById('t-id').value = "";
+            document.getElementById('form-torneio-titulo').textContent = "Novo Torneio";
+            document.getElementById('btn-salvar-torneio').textContent = "Guardar Torneio";
+            document.getElementById('btn-cancelar-torneio').style.display = "none";
+        };
 
         window.importarCalendarioAVB = async () => {
             if (!confirm("Isto vai importar todas as datas do Calendário AVB 2026/27 (Minis A e Minis B). Continuar?")) return;
@@ -543,6 +596,7 @@
             const id = document.getElementById('select-torneio-ativo').value;
             if (!id || !confirm("Excluir este torneio?")) return;
             await deleteDoc(doc(db, "torneios", id));
+            limparFormTorneio();
             mostrarToast("Torneio excluído.");
         };
 
@@ -565,7 +619,7 @@
             const container = document.getElementById('lista-convocatoria');
 
             if (atletasDoEscalao.length === 0) {
-                container.innerHTML = `<p style="color:var(--muted); padding:16px 0;">Nenhum atleta cadastrado no escalão <b>${torneio.escalao}</b>. Vá na aba "Base de Atletas" para cadastrar.</p>`;
+                container.innerHTML = `<p style="color:var(--mid-gray); padding:16px 0;">Nenhum atleta cadastrado no escalão <b>${torneio.escalao}</b>. Vá na aba "Base de Atletas" para cadastrar.</p>`;
                 return;
             }
 
@@ -579,7 +633,7 @@
                 if (status === 'pendente') pen++;
                 if (status === 'recusado') rec++;
 
-                let badgeHtml = `<span class="badge" style="background:#e2e8f0; color:#475569;">Não convocado</span>`;
+                let badgeHtml = `<span class="badge" style="background:#e4e4e7; color:#3f3f46;">Não convocado</span>`;
                 if (status === 'pendente') badgeHtml = `<span class="badge status-pendente">⏳ Aguardando Pais</span>`;
                 if (status === 'autorizado') badgeHtml = `<span class="badge status-autorizado">✅ Autorizado</span>`;
                 if (status === 'recusado') badgeHtml = `<span class="badge status-recusado">❌ Recusado</span>`;
