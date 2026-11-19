@@ -104,7 +104,7 @@
             background: #fafafa; border: 1px dashed var(--dark-gray); padding: 14px; border-radius: 10px; margin-bottom: 18px;
         }
         .pin-box label { color: var(--black); }
-        .pin-box input { max-width: 220px; letter-spacing: 3px; font-weight: 700; text-transform: uppercase; }
+        .pin-box input { max-width: 220px; letter-spacing: 3px; font-weight: 700; }
 
         .empty-state { text-align: center; padding: 28px 16px; color: var(--mid-gray); font-size: 0.92rem; }
         .toast {
@@ -146,10 +146,10 @@
             </div>
 
             <div id="area-pin" class="pin-box" style="display:none;">
-                <label for="input-pin">🔒 Últimos 4 dígitos do documento (CC / TR / Passaporte):</label>
-                <input type="text" id="input-pin" maxlength="4" placeholder="Ex: 1234">
+                <label for="input-pin">🔒 Ano de Nascimento do(a) Atleta (4 dígitos):</label>
+                <input type="number" id="input-pin" placeholder="Ex: 2016" min="2005" max="2025">
                 <small style="display:block; color:var(--mid-gray); font-size:0.78rem; margin-top:5px;">
-                    Necessário para confirmar ou alterar a autorização do atleta.
+                    Confirmação simples de segurança para validar a resposta do atleta selecionado.
                 </small>
             </div>
         </div>
@@ -300,17 +300,22 @@
 
         window.responderConvocatoria = async (torneioId, atletaId, novoStatus) => {
             const atleta = atletas.find(a => a.id === atletaId);
-            if (!atleta) return;
+            const torneio = torneios.find(t => t.id === torneioId);
+            if (!atleta || !torneio) return;
 
-            const pinDigitado = document.getElementById('input-pin').value.trim().toUpperCase();
-            const docLimpo = (atleta.docNum || "").replace(/\s+/g, '').toUpperCase();
-            const ultimos4 = docLimpo.slice(-4);
+            const anoDigitado = document.getElementById('input-pin').value.trim();
+            // Extrai o ano (funciona tanto se guardado como "2016" quanto como "2016-05-14")
+            const anoReal = String(atleta.nascimento || "").slice(0, 4);
 
-            if (pinDigitado.length < 4 || pinDigitado !== ultimos4) {
-                alert("Por favor, introduza corretamente os últimos 4 dígitos do documento (CC / TR / Passaporte) do atleta no campo acima antes de confirmar.");
+            if (anoDigitado.length !== 4 || anoDigitado !== anoReal) {
+                alert("Por favor, introduza corretamente o Ano de Nascimento (4 dígitos) do(a) atleta no campo acima antes de confirmar.");
                 document.getElementById('input-pin').focus();
                 return;
             }
+
+            const acaoTexto = novoStatus === 'autorizado' ? "AUTORIZAR a participação" : "RECUSAR a participação";
+            const confirmou = confirm(`Confirma que pretende ${acaoTexto} de:\n\nAtleta: ${atleta.nome}\nTorneio: ${torneio.nome} (${formatarData(torneio.data)})?`);
+            if (!confirmou) return;
 
             const docId = `${torneioId}_${atletaId}`;
             try {
