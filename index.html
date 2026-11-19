@@ -280,16 +280,15 @@
                             </div>
                         </div>
                         <div class="form-group">
-                            <label>Documento de Identificação</label>
+                            <label>Documento de Identificação <span style="font-weight:400; color:var(--mid-gray);">(Opcional)</span></label>
                             <div class="row-2">
                                 <select id="a-doc-tipo">
                                     <option value="CC">CC</option>
                                     <option value="TR">TR</option>
                                     <option value="Passaporte">Passaporte</option>
                                 </select>
-                                <input type="text" id="a-doc-num" placeholder="Número do documento" required>
+                                <input type="text" id="a-doc-num" placeholder="Número (se tiver)">
                             </div>
-                            <small style="color:var(--mid-gray); font-size:0.75rem;">Os últimos 4 dígitos servirão para os pais validarem a autorização.</small>
                         </div>
                         <div class="form-group">
                             <label>Escalão</label>
@@ -309,7 +308,7 @@
                 <div class="card">
                     <h2>Atletas Registados (<span id="total-atletas">0</span>)</h2>
                     <div class="filter-bar">
-                        <input type="text" id="busca-atleta" placeholder="Pesquisar por nome ou documento..." oninput="renderizarAtletas()">
+                        <input type="text" id="busca-atleta" placeholder="Pesquisar por nome, ano ou documento..." oninput="renderizarAtletas()">
                         <select id="filtro-escalao-atleta" onchange="renderizarAtletas()">
                             <option value="TODOS">Todos os Escalões</option>
                             <option value="Minis A">Minis A</option>
@@ -357,12 +356,10 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // Estado em memória
         let atletas = [];
         let torneios = [];
         let inscricoes = [];
 
-        // Senha simples
         const SENHA_ADMIN = "minis2026";
         window.verificarSenha = () => {
             const val = document.getElementById('admin-pass').value;
@@ -377,7 +374,6 @@
             document.getElementById('login-overlay').style.display = 'none';
         }
 
-        // Notificação Toast
         window.mostrarToast = (msg) => {
             const t = document.getElementById('toast');
             t.textContent = msg;
@@ -385,7 +381,6 @@
             setTimeout(() => t.style.display = 'none', 3000);
         };
 
-        // Navegação de Abas
         window.mudarAba = (aba, btn) => {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
@@ -393,7 +388,6 @@
             btn.classList.add('active');
         };
 
-        // Alternar entre Ano ou Data Completa
         window.alternarModoNascimento = () => {
             const modo = document.getElementById('a-nasc-modo').value;
             const inputAno = document.getElementById('a-ano');
@@ -412,7 +406,6 @@
             }
         };
 
-        // Listeners em tempo real do Firestore
         onSnapshot(query(collection(db, "atletas"), orderBy("nome")), (snap) => {
             atletas = snap.docs.map(d => ({ id: d.id, ...d.data() }));
             renderizarAtletas();
@@ -439,11 +432,13 @@
                 ? document.getElementById('a-ano').value.trim()
                 : document.getElementById('a-nascimento').value;
 
+            const docNum = document.getElementById('a-doc-num').value.trim().toUpperCase();
+
             const dados = {
                 nome: document.getElementById('a-nome').value.trim(),
                 nascimento: valorNascimento,
-                docTipo: document.getElementById('a-doc-tipo').value,
-                docNum: document.getElementById('a-doc-num').value.trim().toUpperCase(),
+                docTipo: docNum ? document.getElementById('a-doc-tipo').value : "",
+                docNum: docNum,
                 escalao: document.getElementById('a-escalao').value
             };
 
@@ -467,7 +462,6 @@
             document.getElementById('a-id').value = a.id;
             document.getElementById('a-nome').value = a.nome;
 
-            // Detecta se está guardado só como ano (4 dígitos) ou data completa (YYYY-MM-DD)
             const nascStr = String(a.nascimento || "");
             if (nascStr.length === 4) {
                 document.getElementById('a-nasc-modo').value = 'ano';
@@ -481,8 +475,8 @@
                 document.getElementById('a-ano').value = "";
             }
 
-            document.getElementById('a-doc-tipo').value = a.docTipo;
-            document.getElementById('a-doc-num').value = a.docNum;
+            document.getElementById('a-doc-tipo').value = a.docTipo || "CC";
+            document.getElementById('a-doc-num').value = a.docNum || "";
             document.getElementById('a-escalao').value = a.escalao;
             document.getElementById('form-atleta-titulo').textContent = "Editar Atleta";
             document.getElementById('btn-salvar-atleta').textContent = "Atualizar Atleta";
@@ -512,7 +506,8 @@
             const tbody = document.getElementById('tabela-atletas');
 
             const filtrados = atletas.filter(a => {
-                const matchTexto = a.nome.toLowerCase().includes(busca) || a.docNum.toLowerCase().includes(busca) || String(a.nascimento || "").includes(busca);
+                const docStr = (a.docNum || "").toLowerCase();
+                const matchTexto = a.nome.toLowerCase().includes(busca) || docStr.includes(busca) || String(a.nascimento || "").includes(busca);
                 const matchEsc = filtroEsc === "TODOS" || a.escalao === filtroEsc;
                 return matchTexto && matchEsc;
             });
@@ -523,7 +518,7 @@
                     <td><strong>${a.nome}</strong></td>
                     <td><span class="badge ${a.escalao === 'Minis A' ? 'badge-a' : 'badge-b'}">${a.escalao}</span></td>
                     <td>${formatarNascimento(a.nascimento)}</td>
-                    <td>${a.docTipo}: <code>${a.docNum}</code></td>
+                    <td>${a.docNum ? `${a.docTipo}: <code>${a.docNum}</code>` : `<span style="color:var(--light-gray); font-size:0.82rem;">Não registado</span>`}</td>
                     <td>
                         <button class="btn-secondary btn-sm" title="Editar Atleta" onclick="editarAtleta('${a.id}')">✏️ Editar</button>
                         <button class="btn-danger" title="Excluir Atleta" onclick="excluirAtleta('${a.id}', '${a.nome.replace(/'/g, "\\'")}')">🗑️</button>
@@ -532,7 +527,7 @@
             `).join('');
         };
 
-        // ================= GESTÃO DE TORNEIOS (CRIAR / EDITAR) =================
+        // ================= GESTÃO DE TORNEIOS =================
         document.getElementById('form-torneio').addEventListener('submit', async (e) => {
             e.preventDefault();
             const id = document.getElementById('t-id').value;
@@ -593,7 +588,6 @@
             if (!confirm("Isto vai importar todas as datas do Calendário AVB 2026/27 (Minis A e Minis B). Continuar?")) return;
 
             const calendarioAVB = [
-                // MINIS A
                 { escalao: "Minis A", nome: "I Torneio Clínica Dentária S. Dâmaso", dataLimite: "2026-10-18", data: "2026-10-25", pavilhao: "Municipal de Adães" },
                 { escalao: "Minis A", nome: "II Torneio Clínica Dentária S. Dâmaso", dataLimite: "2026-11-22", data: "2026-11-29", pavilhao: "Municipal de Adães" },
                 { escalao: "Minis A", nome: "III Torneio Clínica Dentária S. Dâmaso", dataLimite: "2026-12-13", data: "2026-12-20", pavilhao: "Municipal de Adães" },
@@ -603,7 +597,6 @@
                 { escalao: "Minis A", nome: "VII Torneio Clínica Dentária S. Dâmaso", dataLimite: "2027-04-18", data: "2027-04-25", pavilhao: "Municipal de Adães" },
                 { escalao: "Minis A", nome: "VIII Torneio Clínica Dentária S. Dâmaso", dataLimite: "2027-05-16", data: "2027-05-23", pavilhao: "Municipal de Adães" },
                 { escalao: "Minis A", nome: "Festa Mini-Voleibol Clínica Dentária S. Dâmaso", dataLimite: "2027-06-13", data: "2027-06-20", pavilhao: "A definir" },
-                // MINIS B
                 { escalao: "Minis B", nome: "I Torneio Clínica Dentária S. Dâmaso", dataLimite: "2026-10-04", data: "2026-10-11", pavilhao: "Municipal de Adães" },
                 { escalao: "Minis B", nome: "II Torneio Clínica Dentária S. Dâmaso", dataLimite: "2026-11-08", data: "2026-11-15", pavilhao: "Municipal de Adães" },
                 { escalao: "Minis B", nome: "III Torneio Clínica Dentária S. Dâmaso", dataLimite: "2026-12-06", data: "2026-12-13", pavilhao: "Municipal de Adães" },
@@ -687,11 +680,13 @@
                 if (status === 'autorizado') badgeHtml = `<span class="badge status-autorizado">✅ Autorizado</span>`;
                 if (status === 'recusado') badgeHtml = `<span class="badge status-recusado">❌ Recusado</span>`;
 
+                const docInfo = atleta.docNum ? `${atleta.docTipo}: ${atleta.docNum} • ` : "";
+
                 return `
                     <div class="convocatoria-item">
                         <div class="convocatoria-info">
                             <strong>${atleta.nome}</strong>
-                            <small>${atleta.docTipo}: ${atleta.docNum} • Nasc: ${formatarNascimento(atleta.nascimento)}</small>
+                            <small>${docInfo}Nasc: ${formatarNascimento(atleta.nascimento)}</small>
                         </div>
                         <div class="status-actions">
                             ${badgeHtml}
@@ -763,8 +758,8 @@
         function formatarNascimento(val) {
             if (!val) return "-";
             const str = String(val);
-            if (str.length === 4) return str; // Apenas o ano
-            return formatarData(str); // Data completa DD/MM/AAAA
+            if (str.length === 4) return str;
+            return formatarData(str);
         }
     </script>
 </body>
