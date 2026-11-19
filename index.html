@@ -725,9 +725,9 @@
             }
 
             const dados = {
-                escalao,
-                nome,
-                data,
+                escalao: escalao,
+                nome: nome,
+                data: data,
                 dataLimite: document.getElementById('t-limite').value,
                 pavilhao: document.getElementById('t-pavilhao').value.trim() || "A definir"
             };
@@ -918,9 +918,9 @@
         window.definirStatus = async (torneioId, atletaId, status) => {
             const docId = `${torneioId}_${atletaId}`;
             await setDoc(doc(db, "inscricoes", docId), {
-                torneioId,
-                atletaId,
-                status,
+                torneioId: torneioId,
+                atletaId: atletaId,
+                status: status,
                 atualizadoEm: new Date().toISOString()
             });
             mostrarToast("Estado atualizado!");
@@ -969,8 +969,8 @@
                     if (!jaEsta) {
                         const docId = `${torneioId}_${atleta.id}`;
                         batch.set(doc(db, "inscricoes", docId), {
-                            torneioId,
-                            atletaId,
+                            torneioId: torneioId,
+                            atletaId: atleta.id,
                             status: 'pendente',
                             atualizadoEm: new Date().toISOString()
                         });
