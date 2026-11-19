@@ -57,7 +57,7 @@
         .nav-links a:hover { background: white; color: var(--black); border-color: white; }
 
         /* Container & Tabs */
-        .container { max-width: 1150px; margin: 24px auto; padding: 0 16px; }
+        .container { max-width: 1180px; margin: 24px auto; padding: 0 16px; }
         .tabs { display: flex; gap: 8px; margin-bottom: 20px; border-bottom: 2px solid var(--border); padding-bottom: 10px; }
         .tab-btn {
             background: transparent; border: 1px solid transparent; padding: 10px 18px; font-size: 0.95rem;
@@ -69,8 +69,8 @@
         .tab-content.active { display: block; }
 
         /* Grid & Cards */
-        .grid-2 { display: grid; grid-template-columns: 360px 1fr; gap: 20px; align-items: start; }
-        @media (max-width: 850px) { .grid-2 { grid-template-columns: 1fr; } }
+        .grid-2 { display: grid; grid-template-columns: 350px 1fr; gap: 20px; align-items: start; }
+        @media (max-width: 900px) { .grid-2 { grid-template-columns: 1fr; } }
 
         .card {
             background: var(--card); border-radius: 12px; padding: 20px;
@@ -91,6 +91,7 @@
         input:focus, select:focus { outline: none; border-color: var(--black); box-shadow: 0 0 0 3px rgba(0,0,0,0.08); }
         .row-2 { display: grid; grid-template-columns: 110px 1fr; gap: 8px; }
         .row-nasc { display: grid; grid-template-columns: 135px 1fr; gap: 8px; }
+        .row-equal { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 
         button {
             cursor: pointer; border: none; border-radius: 8px; font-weight: 600; font-size: 0.9rem;
@@ -106,17 +107,29 @@
         .btn-danger:hover { background: var(--danger); color: white; border-color: var(--danger); }
         .btn-sm { padding: 6px 11px; font-size: 0.8rem; }
 
+        /* Resumo de Polos */
+        .polo-stats {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px;
+        }
+        .stat-box {
+            background: #fafafa; border: 1px solid var(--border); border-radius: 10px;
+            padding: 10px 12px; text-align: center;
+        }
+        .stat-box strong { display: block; font-size: 1.25rem; color: var(--black); line-height: 1.2; }
+        .stat-box span { font-size: 0.76rem; color: var(--mid-gray); font-weight: 600; text-transform: uppercase; }
+
         /* Tabelas e Badges */
         .table-wrap { overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
-        th, td { text-align: left; padding: 12px 10px; border-bottom: 1px solid var(--border); }
-        th { background: #fafafa; font-weight: 700; color: var(--dark-gray); font-size: 0.78rem; text-transform: uppercase; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+        th, td { text-align: left; padding: 11px 9px; border-bottom: 1px solid var(--border); }
+        th { background: #fafafa; font-weight: 700; color: var(--dark-gray); font-size: 0.76rem; text-transform: uppercase; }
         
         .badge {
-            padding: 3px 9px; border-radius: 999px; font-size: 0.75rem; font-weight: 700; display: inline-block;
+            padding: 3px 9px; border-radius: 999px; font-size: 0.74rem; font-weight: 700; display: inline-block; white-space: nowrap;
         }
         .badge-a { background: var(--black); color: white; }
         .badge-b { background: #e4e4e7; color: var(--black); border: 1px solid #a1a1aa; }
+        .badge-polo { background: #f4f4f5; color: var(--dark-gray); border: 1px solid #d4d4d8; font-weight: 600; }
         .status-pendente { background: #fef3c7; color: #92400e; }
         .status-autorizado { background: #dcfce7; color: #166534; }
         .status-recusado { background: #fee2e2; color: #991b1b; }
@@ -130,8 +143,8 @@
         .convocatoria-info small { color: var(--mid-gray); }
         .status-actions { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
 
-        .filter-bar { display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
-        .filter-bar input, .filter-bar select { width: auto; flex: 1; min-width: 150px; }
+        .filter-bar { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+        .filter-bar input, .filter-bar select { width: auto; flex: 1; min-width: 140px; }
 
         .torneio-banner {
             display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;
@@ -279,6 +292,22 @@
                                 <input type="date" id="a-nascimento" style="display:none;">
                             </div>
                         </div>
+                        <div class="row-equal">
+                            <div class="form-group">
+                                <label>Escalão</label>
+                                <select id="a-escalao" required>
+                                    <option value="Minis A">Minis A</option>
+                                    <option value="Minis B">Minis B</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Polo de Treino</label>
+                                <select id="a-polo" required>
+                                    <option value="Polo de Manhente">Polo de Manhente</option>
+                                    <option value="Polo Gonçalo Nunes">Polo Gonçalo Nunes</option>
+                                </select>
+                            </div>
+                        </div>
                         <div class="form-group">
                             <label>Documento de Identificação <span style="font-weight:400; color:var(--mid-gray);">(Opcional)</span></label>
                             <div class="row-2">
@@ -290,13 +319,6 @@
                                 <input type="text" id="a-doc-num" placeholder="Número (se tiver)">
                             </div>
                         </div>
-                        <div class="form-group">
-                            <label>Escalão</label>
-                            <select id="a-escalao" required>
-                                <option value="Minis A">Minis A</option>
-                                <option value="Minis B">Minis B</option>
-                            </select>
-                        </div>
                         <div style="display:flex; gap:8px;">
                             <button type="submit" class="btn-primary" id="btn-salvar-atleta">Guardar Atleta</button>
                             <button type="button" class="btn-secondary" id="btn-cancelar-edicao" style="display:none;" onclick="limparFormAtleta()">Cancelar</button>
@@ -307,12 +329,34 @@
                 <!-- Lista de Atletas -->
                 <div class="card">
                     <h2>Atletas Registados (<span id="total-atletas">0</span>)</h2>
+
+                    <!-- Contadores por Polo -->
+                    <div class="polo-stats">
+                        <div class="stat-box">
+                            <strong id="stat-total">0</strong>
+                            <span>Total Geral</span>
+                        </div>
+                        <div class="stat-box">
+                            <strong id="stat-manhente">0</strong>
+                            <span>Polo de Manhente</span>
+                        </div>
+                        <div class="stat-box">
+                            <strong id="stat-goncalo">0</strong>
+                            <span>Polo Gonçalo Nunes</span>
+                        </div>
+                    </div>
+
                     <div class="filter-bar">
-                        <input type="text" id="busca-atleta" placeholder="Pesquisar por nome, ano ou documento..." oninput="renderizarAtletas()">
+                        <input type="text" id="busca-atleta" placeholder="Pesquisar por nome, ano ou doc..." oninput="renderizarAtletas()">
                         <select id="filtro-escalao-atleta" onchange="renderizarAtletas()">
-                            <option value="TODOS">Todos os Escalões</option>
+                            <option value="TODOS">Todos Escalões</option>
                             <option value="Minis A">Minis A</option>
                             <option value="Minis B">Minis B</option>
+                        </select>
+                        <select id="filtro-polo-atleta" onchange="renderizarAtletas()">
+                            <option value="TODOS">Todos os Polos</option>
+                            <option value="Polo de Manhente">Polo de Manhente</option>
+                            <option value="Polo Gonçalo Nunes">Polo Gonçalo Nunes</option>
                         </select>
                     </div>
                     <div class="table-wrap">
@@ -321,7 +365,8 @@
                                 <tr>
                                     <th>Nome</th>
                                     <th>Escalão</th>
-                                    <th>Nascimento</th>
+                                    <th>Polo</th>
+                                    <th>Nasc.</th>
                                     <th>Documento</th>
                                     <th>Ações</th>
                                 </tr>
@@ -437,9 +482,10 @@
             const dados = {
                 nome: document.getElementById('a-nome').value.trim(),
                 nascimento: valorNascimento,
+                escalao: document.getElementById('a-escalao').value,
+                polo: document.getElementById('a-polo').value,
                 docTipo: docNum ? document.getElementById('a-doc-tipo').value : "",
-                docNum: docNum,
-                escalao: document.getElementById('a-escalao').value
+                docNum: docNum
             };
 
             try {
@@ -475,9 +521,10 @@
                 document.getElementById('a-ano').value = "";
             }
 
+            document.getElementById('a-escalao').value = a.escalao;
+            document.getElementById('a-polo').value = a.polo || "Polo de Manhente";
             document.getElementById('a-doc-tipo').value = a.docTipo || "CC";
             document.getElementById('a-doc-num').value = a.docNum || "";
-            document.getElementById('a-escalao').value = a.escalao;
             document.getElementById('form-atleta-titulo').textContent = "Editar Atleta";
             document.getElementById('btn-salvar-atleta').textContent = "Atualizar Atleta";
             document.getElementById('btn-cancelar-edicao').style.display = "inline-flex";
@@ -503,13 +550,20 @@
         window.renderizarAtletas = () => {
             const busca = document.getElementById('busca-atleta').value.toLowerCase();
             const filtroEsc = document.getElementById('filtro-escalao-atleta').value;
+            const filtroPolo = document.getElementById('filtro-polo-atleta').value;
             const tbody = document.getElementById('tabela-atletas');
+
+            // Atualiza contadores gerais por polo
+            document.getElementById('stat-total').textContent = atletas.length;
+            document.getElementById('stat-manhente').textContent = atletas.filter(a => a.polo === "Polo de Manhente").length;
+            document.getElementById('stat-goncalo').textContent = atletas.filter(a => a.polo === "Polo Gonçalo Nunes").length;
 
             const filtrados = atletas.filter(a => {
                 const docStr = (a.docNum || "").toLowerCase();
                 const matchTexto = a.nome.toLowerCase().includes(busca) || docStr.includes(busca) || String(a.nascimento || "").includes(busca);
                 const matchEsc = filtroEsc === "TODOS" || a.escalao === filtroEsc;
-                return matchTexto && matchEsc;
+                const matchPolo = filtroPolo === "TODOS" || (a.polo || "Não definido") === filtroPolo;
+                return matchTexto && matchEsc && matchPolo;
             });
 
             document.getElementById('total-atletas').textContent = filtrados.length;
@@ -517,10 +571,11 @@
                 <tr>
                     <td><strong>${a.nome}</strong></td>
                     <td><span class="badge ${a.escalao === 'Minis A' ? 'badge-a' : 'badge-b'}">${a.escalao}</span></td>
+                    <td><span class="badge badge-polo">${a.polo || "Não definido"}</span></td>
                     <td>${formatarNascimento(a.nascimento)}</td>
-                    <td>${a.docNum ? `${a.docTipo}: <code>${a.docNum}</code>` : `<span style="color:var(--light-gray); font-size:0.82rem;">Não registado</span>`}</td>
+                    <td>${a.docNum ? `${a.docTipo}: <code>${a.docNum}</code>` : `<span style="color:var(--light-gray); font-size:0.8rem;">—</span>`}</td>
                     <td>
-                        <button class="btn-secondary btn-sm" title="Editar Atleta" onclick="editarAtleta('${a.id}')">✏️ Editar</button>
+                        <button class="btn-secondary btn-sm" title="Editar Atleta" onclick="editarAtleta('${a.id}')">✏️</button>
                         <button class="btn-danger" title="Excluir Atleta" onclick="excluirAtleta('${a.id}', '${a.nome.replace(/'/g, "\\'")}')">🗑️</button>
                     </td>
                 </tr>
@@ -680,13 +735,14 @@
                 if (status === 'autorizado') badgeHtml = `<span class="badge status-autorizado">✅ Autorizado</span>`;
                 if (status === 'recusado') badgeHtml = `<span class="badge status-recusado">❌ Recusado</span>`;
 
+                const poloInfo = atleta.polo ? `${atleta.polo} • ` : "";
                 const docInfo = atleta.docNum ? `${atleta.docTipo}: ${atleta.docNum} • ` : "";
 
                 return `
                     <div class="convocatoria-item">
                         <div class="convocatoria-info">
                             <strong>${atleta.nome}</strong>
-                            <small>${docInfo}Nasc: ${formatarNascimento(atleta.nascimento)}</small>
+                            <small>${poloInfo}${docInfo}Nasc: ${formatarNascimento(atleta.nascimento)}</small>
                         </div>
                         <div class="status-actions">
                             ${badgeHtml}
