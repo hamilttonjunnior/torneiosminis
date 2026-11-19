@@ -90,6 +90,7 @@
         }
         input:focus, select:focus { outline: none; border-color: var(--black); box-shadow: 0 0 0 3px rgba(0,0,0,0.08); }
         .row-2 { display: grid; grid-template-columns: 110px 1fr; gap: 8px; }
+        .row-nasc { display: grid; grid-template-columns: 135px 1fr; gap: 8px; }
 
         button {
             cursor: pointer; border: none; border-radius: 8px; font-weight: 600; font-size: 0.9rem;
@@ -268,8 +269,15 @@
                             <input type="text" id="a-nome" placeholder="Ex: Maria Clara Silva" required>
                         </div>
                         <div class="form-group">
-                            <label>Data de Nascimento</label>
-                            <input type="date" id="a-nascimento" required>
+                            <label>Nascimento</label>
+                            <div class="row-nasc">
+                                <select id="a-nasc-modo" onchange="alternarModoNascimento()">
+                                    <option value="ano">Apenas Ano</option>
+                                    <option value="data">Data Completa</option>
+                                </select>
+                                <input type="number" id="a-ano" placeholder="Ex: 2016" min="2005" max="2025" required>
+                                <input type="date" id="a-nascimento" style="display:none;">
+                            </div>
                         </div>
                         <div class="form-group">
                             <label>Documento de Identificação</label>
@@ -385,6 +393,25 @@
             btn.classList.add('active');
         };
 
+        // Alternar entre Ano ou Data Completa
+        window.alternarModoNascimento = () => {
+            const modo = document.getElementById('a-nasc-modo').value;
+            const inputAno = document.getElementById('a-ano');
+            const inputData = document.getElementById('a-nascimento');
+
+            if (modo === 'ano') {
+                inputAno.style.display = 'block';
+                inputAno.required = true;
+                inputData.style.display = 'none';
+                inputData.required = false;
+            } else {
+                inputAno.style.display = 'none';
+                inputAno.required = false;
+                inputData.style.display = 'block';
+                inputData.required = true;
+            }
+        };
+
         // Listeners em tempo real do Firestore
         onSnapshot(query(collection(db, "atletas"), orderBy("nome")), (snap) => {
             atletas = snap.docs.map(d => ({ id: d.id, ...d.data() }));
@@ -407,9 +434,14 @@
         document.getElementById('form-atleta').addEventListener('submit', async (e) => {
             e.preventDefault();
             const id = document.getElementById('a-id').value;
+            const modo = document.getElementById('a-nasc-modo').value;
+            const valorNascimento = modo === 'ano'
+                ? document.getElementById('a-ano').value.trim()
+                : document.getElementById('a-nascimento').value;
+
             const dados = {
                 nome: document.getElementById('a-nome').value.trim(),
-                nascimento: document.getElementById('a-nascimento').value,
+                nascimento: valorNascimento,
                 docTipo: document.getElementById('a-doc-tipo').value,
                 docNum: document.getElementById('a-doc-num').value.trim().toUpperCase(),
                 escalao: document.getElementById('a-escalao').value
@@ -434,18 +466,35 @@
             if (!a) return;
             document.getElementById('a-id').value = a.id;
             document.getElementById('a-nome').value = a.nome;
-            document.getElementById('a-nascimento').value = a.nascimento;
+
+            // Detecta se está guardado só como ano (4 dígitos) ou data completa (YYYY-MM-DD)
+            const nascStr = String(a.nascimento || "");
+            if (nascStr.length === 4) {
+                document.getElementById('a-nasc-modo').value = 'ano';
+                alternarModoNascimento();
+                document.getElementById('a-ano').value = nascStr;
+                document.getElementById('a-nascimento').value = "";
+            } else {
+                document.getElementById('a-nasc-modo').value = 'data';
+                alternarModoNascimento();
+                document.getElementById('a-nascimento').value = nascStr;
+                document.getElementById('a-ano').value = "";
+            }
+
             document.getElementById('a-doc-tipo').value = a.docTipo;
             document.getElementById('a-doc-num').value = a.docNum;
             document.getElementById('a-escalao').value = a.escalao;
             document.getElementById('form-atleta-titulo').textContent = "Editar Atleta";
-            document.getElementById('btn-salvar-atleta').textContent = "Atualizar";
+            document.getElementById('btn-salvar-atleta').textContent = "Atualizar Atleta";
             document.getElementById('btn-cancelar-edicao').style.display = "inline-flex";
+            document.getElementById('a-nome').focus();
         };
 
         window.limparFormAtleta = () => {
             document.getElementById('form-atleta').reset();
             document.getElementById('a-id').value = "";
+            document.getElementById('a-nasc-modo').value = "ano";
+            alternarModoNascimento();
             document.getElementById('form-atleta-titulo').textContent = "Cadastrar Atleta";
             document.getElementById('btn-salvar-atleta').textContent = "Guardar Atleta";
             document.getElementById('btn-cancelar-edicao').style.display = "none";
@@ -463,7 +512,7 @@
             const tbody = document.getElementById('tabela-atletas');
 
             const filtrados = atletas.filter(a => {
-                const matchTexto = a.nome.toLowerCase().includes(busca) || a.docNum.toLowerCase().includes(busca);
+                const matchTexto = a.nome.toLowerCase().includes(busca) || a.docNum.toLowerCase().includes(busca) || String(a.nascimento || "").includes(busca);
                 const matchEsc = filtroEsc === "TODOS" || a.escalao === filtroEsc;
                 return matchTexto && matchEsc;
             });
@@ -473,11 +522,11 @@
                 <tr>
                     <td><strong>${a.nome}</strong></td>
                     <td><span class="badge ${a.escalao === 'Minis A' ? 'badge-a' : 'badge-b'}">${a.escalao}</span></td>
-                    <td>${formatarData(a.nascimento)}</td>
+                    <td>${formatarNascimento(a.nascimento)}</td>
                     <td>${a.docTipo}: <code>${a.docNum}</code></td>
                     <td>
-                        <button class="btn-secondary btn-sm" onclick="editarAtleta('${a.id}')">✏️</button>
-                        <button class="btn-danger" onclick="excluirAtleta('${a.id}', '${a.nome.replace(/'/g, "\\'")}')">🗑️</button>
+                        <button class="btn-secondary btn-sm" title="Editar Atleta" onclick="editarAtleta('${a.id}')">✏️ Editar</button>
+                        <button class="btn-danger" title="Excluir Atleta" onclick="excluirAtleta('${a.id}', '${a.nome.replace(/'/g, "\\'")}')">🗑️</button>
                     </td>
                 </tr>
             `).join('');
@@ -642,7 +691,7 @@
                     <div class="convocatoria-item">
                         <div class="convocatoria-info">
                             <strong>${atleta.nome}</strong>
-                            <small>${atleta.docTipo}: ${atleta.docNum} • Nasc: ${formatarData(atleta.nascimento)}</small>
+                            <small>${atleta.docTipo}: ${atleta.docNum} • Nasc: ${formatarNascimento(atleta.nascimento)}</small>
                         </div>
                         <div class="status-actions">
                             ${badgeHtml}
@@ -709,6 +758,13 @@
             if (!iso) return "-";
             const [y, m, d] = iso.split('-');
             return `${d}/${m}/${y}`;
+        }
+
+        function formatarNascimento(val) {
+            if (!val) return "-";
+            const str = String(val);
+            if (str.length === 4) return str; // Apenas o ano
+            return formatarData(str); // Data completa DD/MM/AAAA
         }
     </script>
 </body>
