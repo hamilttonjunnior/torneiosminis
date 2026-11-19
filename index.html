@@ -1,0 +1,989 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestão Mini-Voleibol | Administração</title>
+    <style>
+        :root {
+            --black: #0a0a0a;
+            --dark-gray: #1f2937;
+            --mid-gray: #4b5563;
+            --light-gray: #9ca3af;
+            --bg: #f4f4f5;
+            --card: #ffffff;
+            --text: #111827;
+            --border: #d4d4d8;
+            --success: #16a34a;
+            --warning: #d97706;
+            --danger: #dc2626;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
+        body { background: var(--bg); color: var(--text); line-height: 1.5; }
+
+        /* Tela de Bloqueio */
+        #login-overlay {
+            position: fixed; inset: 0; background: var(--black);
+            display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 20px;
+        }
+        .login-box {
+            background: var(--card); padding: 32px; border-radius: 16px; width: 100%; max-width: 380px;
+            text-align: center; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5); border: 1px solid var(--dark-gray);
+        }
+        .login-box img { max-height: 75px; margin-bottom: 16px; object-fit: contain; }
+        .login-box h2 { margin-bottom: 6px; font-size: 1.25rem; color: var(--black); }
+        .login-box p { color: var(--mid-gray); font-size: 0.9rem; margin-bottom: 20px; }
+
+        /* Header */
+        header {
+            background: var(--black); color: white; padding: 16px 24px;
+            display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;
+            border-bottom: 3px solid var(--dark-gray);
+        }
+        .brand { display: flex; align-items: center; gap: 14px; }
+        .brand img {
+            height: 52px; width: 52px; object-fit: contain; background: white;
+            border-radius: 10px; padding: 4px;
+        }
+        .brand h1 { font-size: 1.2rem; font-weight: 700; letter-spacing: -0.3px; }
+        .brand span { font-size: 0.85rem; color: var(--light-gray); display: block; }
+
+        .nav-links { display: flex; gap: 8px; flex-wrap: wrap; }
+        .nav-links a {
+            color: #f4f4f5; text-decoration: none; font-size: 0.85rem; padding: 7px 14px;
+            border-radius: 8px; border: 1px solid #3f3f46; background: #18181b; transition: 0.2s; font-weight: 600;
+        }
+        .nav-links a:hover { background: white; color: var(--black); border-color: white; }
+
+        /* Container & Tabs */
+        .container { max-width: 1200px; margin: 24px auto; padding: 0 16px; }
+        .tabs { display: flex; gap: 8px; margin-bottom: 20px; border-bottom: 2px solid var(--border); padding-bottom: 10px; }
+        .tab-btn {
+            background: transparent; border: 1px solid transparent; padding: 10px 18px; font-size: 0.95rem;
+            font-weight: 600; color: var(--mid-gray); cursor: pointer; border-radius: 8px; transition: 0.2s;
+        }
+        .tab-btn:hover { background: #e4e4e7; color: var(--black); }
+        .tab-btn.active { background: var(--black); color: white; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        /* Grid & Cards */
+        .grid-2 { display: grid; grid-template-columns: 350px 1fr; gap: 20px; align-items: start; }
+        @media (max-width: 900px) { .grid-2 { grid-template-columns: 1fr; } }
+
+        .card {
+            background: var(--card); border-radius: 12px; padding: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06); border: 1px solid var(--border);
+        }
+        .card h2 {
+            font-size: 1.08rem; margin-bottom: 16px; display: flex; align-items: center;
+            justify-content: space-between; color: var(--black); border-bottom: 1px solid #f4f4f5; padding-bottom: 10px;
+        }
+
+        /* Formulários */
+        .form-group { margin-bottom: 14px; }
+        label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 5px; color: var(--dark-gray); }
+        input, select {
+            width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px;
+            font-size: 0.95rem; background: #fff; color: var(--text);
+        }
+        input:focus, select:focus { outline: none; border-color: var(--black); box-shadow: 0 0 0 3px rgba(0,0,0,0.08); }
+        .row-2 { display: grid; grid-template-columns: 110px 1fr; gap: 8px; }
+        .row-nasc { display: grid; grid-template-columns: 135px 1fr; gap: 8px; }
+        .row-equal { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+        button {
+            cursor: pointer; border: none; border-radius: 8px; font-weight: 600; font-size: 0.9rem;
+            padding: 10px 16px; transition: 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+        }
+        .btn-primary { background: var(--black); color: white; width: 100%; }
+        .btn-primary:hover { background: var(--dark-gray); }
+        .btn-secondary { background: #e4e4e7; color: var(--black); border: 1px solid #d4d4d8; }
+        .btn-secondary:hover { background: #d4d4d8; }
+        .btn-dark-outline { background: white; color: var(--black); border: 1px solid var(--black); }
+        .btn-dark-outline:hover { background: var(--black); color: white; }
+        .btn-danger { background: #fafafa; color: var(--danger); border: 1px solid #fca5a5; padding: 6px 10px; font-size: 0.8rem; }
+        .btn-danger:hover { background: var(--danger); color: white; border-color: var(--danger); }
+        .btn-sm { padding: 6px 11px; font-size: 0.8rem; }
+
+        /* Resumo de Polos e Escalões (5 cards) */
+        .stats-grid-5 {
+            display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 16px;
+        }
+        @media (max-width: 720px) { .stats-grid-5 { grid-template-columns: repeat(2, 1fr); } }
+
+        .stat-box {
+            background: #fafafa; border: 1px solid var(--border); border-radius: 10px;
+            padding: 10px 8px; text-align: center;
+        }
+        .stat-box.highlight { background: var(--black); border-color: var(--black); }
+        .stat-box.highlight strong { color: white; }
+        .stat-box.highlight span { color: #d4d4d8; }
+        .stat-box strong { display: block; font-size: 1.25rem; color: var(--black); line-height: 1.2; }
+        .stat-box span { font-size: 0.72rem; color: var(--mid-gray); font-weight: 700; text-transform: uppercase; }
+
+        /* Alerta de Duplicidade */
+        .dup-alert {
+            background: #fef3c7; border: 1px solid #f59e0b; color: #92400e;
+            padding: 12px 14px; border-radius: 10px; margin-bottom: 14px; font-size: 0.85rem;
+            display: none; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+        }
+
+        /* Tabelas e Badges */
+        .table-wrap { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+        th, td { text-align: left; padding: 11px 9px; border-bottom: 1px solid var(--border); }
+        th { background: #fafafa; font-weight: 700; color: var(--dark-gray); font-size: 0.76rem; text-transform: uppercase; }
+        tr.row-dup { background: #fffbeb; }
+        
+        .badge {
+            padding: 3px 9px; border-radius: 999px; font-size: 0.74rem; font-weight: 700; display: inline-block; white-space: nowrap;
+        }
+        .badge-a { background: var(--black); color: white; }
+        .badge-b { background: #e4e4e7; color: var(--black); border: 1px solid #a1a1aa; }
+        .badge-polo { background: #f4f4f5; color: var(--dark-gray); border: 1px solid #d4d4d8; font-weight: 600; }
+        .badge-dup { background: #fef3c7; color: #b45309; border: 1px solid #f59e0b; margin-left: 6px; }
+        .status-pendente { background: #fef3c7; color: #92400e; }
+        .status-autorizado { background: #dcfce7; color: #166534; }
+        .status-recusado { background: #fee2e2; color: #991b1b; }
+
+        /* Lista de Convocatória */
+        .convocatoria-item {
+            display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;
+            padding: 12px 14px; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 8px; background: #fafafa;
+        }
+        .convocatoria-info strong { font-size: 0.95rem; color: var(--black); }
+        .convocatoria-info small { display: block; color: var(--mid-gray); margin-top: 2px; }
+        .status-actions { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+
+        .filter-bar { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+        .filter-bar input, .filter-bar select { width: auto; flex: 1; min-width: 140px; }
+
+        .torneio-banner {
+            display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px;
+            background: #fafafa; padding: 14px; border-radius: 10px; margin-bottom: 16px; border: 1px solid var(--border);
+        }
+        .torneio-btn-group { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+
+        .toast {
+            position: fixed; bottom: 20px; right: 20px; background: var(--black); color: white;
+            padding: 12px 20px; border-radius: 8px; box-shadow: 0 10px 15px rgba(0,0,0,0.3);
+            display: none; z-index: 2000; font-size: 0.9rem; border: 1px solid var(--dark-gray);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Tela de Login Simples -->
+    <div id="login-overlay">
+        <div class="login-box">
+            <img src="logo.png" alt="Logo do Clube" onerror="this.style.display='none'">
+            <h2>Gestão Mini-Voleibol</h2>
+            <p>Área reservada à equipa técnica</p>
+            <div class="form-group">
+                <input type="password" id="admin-pass" placeholder="Senha de acesso..." onkeypress="if(event.key==='Enter') verificarSenha()">
+            </div>
+            <button class="btn-primary" onclick="verificarSenha()">Entrar na Gestão</button>
+        </div>
+    </div>
+
+    <header>
+        <div class="brand">
+            <img src="logo.png" alt="Logo" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2280%22>🏐</text></svg>'">
+            <div>
+                <h1>Gestão Mini-Voleibol</h1>
+                <span>Minis A & Minis B • Época 2026/27</span>
+            </div>
+        </div>
+        <div class="nav-links">
+            <a href="pais.html" target="_blank">🔗 Página dos Pais</a>
+            <a href="lista.html" target="_blank">📋 Lista Pública</a>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="tabs">
+            <button class="tab-btn active" onclick="mudarAba('convocatorias', this)">🏆 Torneios & Convocatórias</button>
+            <button class="tab-btn" onclick="mudarAba('atletas', this)">👟 Base de Atletas</button>
+        </div>
+
+        <!-- ABA 1: TORNEIOS E CONVOCATÓRIAS -->
+        <div id="tab-convocatorias" class="tab-content active">
+            <div class="grid-2">
+                <!-- Coluna Esquerda: Cadastro / Edição de Torneio -->
+                <div class="card">
+                    <h2>
+                        <span id="form-torneio-titulo">Novo Torneio</span>
+                        <button type="button" class="btn-secondary btn-sm" onclick="importarCalendarioAVB()" title="Carregar todas as datas da tabela AVB">📥 Importar AVB</button>
+                    </h2>
+                    <form id="form-torneio">
+                        <input type="hidden" id="t-id">
+                        <div class="form-group">
+                            <label>Escalão</label>
+                            <select id="t-escalao" required>
+                                <option value="Minis A">Minis A</option>
+                                <option value="Minis B">Minis B</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Nome da Competição</label>
+                            <input type="text" id="t-nome" placeholder="Ex: II Torneio Clínica Dentária S. Dâmaso" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Data do Torneio</label>
+                            <input type="date" id="t-data" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Data Limite Inscrição</label>
+                            <input type="date" id="t-limite">
+                        </div>
+                        <div class="form-group">
+                            <label>Pavilhão / Local</label>
+                            <input type="text" id="t-pavilhao" placeholder="Ex: Municipal de Adães">
+                        </div>
+                        <div style="display:flex; gap:8px;">
+                            <button type="submit" class="btn-primary" id="btn-salvar-torneio">Guardar Torneio</button>
+                            <button type="button" class="btn-secondary" id="btn-cancelar-torneio" style="display:none;" onclick="limparFormTorneio()">Cancelar</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Coluna Direita: Seleção de Torneio e Convocatória -->
+                <div class="card">
+                    <h2>Convocatória & Autorizações</h2>
+                    <div class="form-group">
+                        <label>Selecione o Torneio para gerir os atletas:</label>
+                        <select id="select-torneio-ativo" onchange="renderizarConvocatoria()">
+                            <option value="">A carregar torneios...</option>
+                        </select>
+                    </div>
+
+                    <div id="painel-torneio-detalhes" style="display:none;">
+                        <div class="torneio-banner">
+                            <div style="width:100%; display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:8px;">
+                                <div>
+                                    <strong id="info-t-titulo" style="font-size:1rem; color:var(--black);"></strong>
+                                    <div id="info-t-sub" style="font-size:0.85rem; color:var(--mid-gray); margin-top:2px;"></div>
+                                </div>
+                                <div style="display:flex; gap:6px;">
+                                    <button type="button" class="btn-secondary btn-sm" onclick="editarTorneioAtual()">✏️ Editar</button>
+                                    <button type="button" class="btn-danger" onclick="excluirTorneioAtual()">🗑️ Excluir</button>
+                                </div>
+                            </div>
+
+                            <div class="torneio-btn-group">
+                                <button type="button" class="btn-dark-outline btn-sm" onclick="convocarPorFiltro('Minis A')">+ Convocar Minis A</button>
+                                <button type="button" class="btn-dark-outline btn-sm" onclick="convocarPorFiltro('Minis B')">+ Convocar Minis B</button>
+                                <button type="button" class="btn-secondary btn-sm" onclick="convocarPorFiltro('TODOS')">+ Convocar Todos</button>
+                            </div>
+                        </div>
+
+                        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:14px;">
+                            <div style="display:flex; gap:14px; font-size:0.85rem; font-weight:600; flex-wrap:wrap;">
+                                <span style="color:var(--success);">✅ Autorizados: <b id="count-aut">0</b></span>
+                                <span style="color:var(--warning);">⏳ Pendentes: <b id="count-pen">0</b></span>
+                                <span style="color:var(--danger);">❌ Recusados: <b id="count-rec">0</b></span>
+                            </div>
+                            <select id="filtro-conv-escalao" onchange="renderizarConvocatoria()" style="width:auto; padding:6px 10px; font-size:0.82rem;">
+                                <option value="DO_TORNEIO">Mostrar Escalão do Torneio</option>
+                                <option value="TODOS">Mostrar Todos os Atletas</option>
+                                <option value="Minis A">Apenas Minis A</option>
+                                <option value="Minis B">Apenas Minis B</option>
+                            </select>
+                        </div>
+
+                        <div id="lista-convocatoria"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ABA 2: BASE DE ATLETAS -->
+        <div id="tab-atletas" class="tab-content">
+            <div class="grid-2">
+                <!-- Formulário de Atleta -->
+                <div class="card">
+                    <h2 id="form-atleta-titulo">Cadastrar Atleta</h2>
+                    <form id="form-atleta">
+                        <input type="hidden" id="a-id">
+                        <div class="form-group">
+                            <label>Nome Completo do Atleta</label>
+                            <input type="text" id="a-nome" placeholder="Ex: Maria Clara Silva" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Nascimento</label>
+                            <div class="row-nasc">
+                                <select id="a-nasc-modo" onchange="alternarModoNascimento()">
+                                    <option value="ano">Apenas Ano</option>
+                                    <option value="data">Data Completa</option>
+                                </select>
+                                <input type="number" id="a-ano" placeholder="Ex: 2016" min="2005" max="2025" required>
+                                <input type="date" id="a-nascimento" style="display:none;">
+                            </div>
+                        </div>
+                        <div class="row-equal">
+                            <div class="form-group">
+                                <label>Escalão</label>
+                                <select id="a-escalao" required>
+                                    <option value="Minis A">Minis A</option>
+                                    <option value="Minis B">Minis B</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Polo de Treino</label>
+                                <select id="a-polo" required>
+                                    <option value="Polo de Manhente">Polo de Manhente</option>
+                                    <option value="Polo Gonçalo Nunes">Polo Gonçalo Nunes</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Documento de Identificação <span style="font-weight:400; color:var(--mid-gray);">(Opcional)</span></label>
+                            <div class="row-2">
+                                <select id="a-doc-tipo">
+                                    <option value="CC">CC</option>
+                                    <option value="TR">TR</option>
+                                    <option value="Passaporte">Passaporte</option>
+                                </select>
+                                <input type="text" id="a-doc-num" placeholder="Número (se tiver)">
+                            </div>
+                        </div>
+                        <div style="display:flex; gap:8px;">
+                            <button type="submit" class="btn-primary" id="btn-salvar-atleta">Guardar Atleta</button>
+                            <button type="button" class="btn-secondary" id="btn-cancelar-edicao" style="display:none;" onclick="limparFormAtleta()">Cancelar</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Lista de Atletas -->
+                <div class="card">
+                    <h2><span>Atletas Registados (<span id="total-atletas">0</span>)</span></h2>
+
+                    <!-- Alerta automático de duplicidades -->
+                    <div id="alerta-duplicados" class="dup-alert">
+                        <div>⚠️ <strong>Atenção:</strong> Foram detetados <span id="qtd-duplicados">0</span> registo(s) com nome ou documento duplicado!</div>
+                        <button type="button" class="btn-sm" style="background:#f59e0b; color:white;" onclick="filtrarApenasDuplicados()">Ver Duplicados</button>
+                    </div>
+
+                    <!-- Contadores por Escalão e Polo -->
+                    <div class="stats-grid-5">
+                        <div class="stat-box highlight">
+                            <strong id="stat-total">0</strong>
+                            <span>Total Geral</span>
+                        </div>
+                        <div class="stat-box">
+                            <strong id="stat-minis-a">0</strong>
+                            <span>Minis A</span>
+                        </div>
+                        <div class="stat-box">
+                            <strong id="stat-minis-b">0</strong>
+                            <span>Minis B</span>
+                        </div>
+                        <div class="stat-box">
+                            <strong id="stat-manhente">0</strong>
+                            <span>Manhente</span>
+                        </div>
+                        <div class="stat-box">
+                            <strong id="stat-goncalo">0</strong>
+                            <span>Gonçalo Nunes</span>
+                        </div>
+                    </div>
+
+                    <div class="filter-bar">
+                        <input type="text" id="busca-atleta" placeholder="Pesquisar por nome, ano ou doc..." oninput="desativarFiltroDup(); renderizarAtletas()">
+                        <select id="filtro-escalao-atleta" onchange="desativarFiltroDup(); renderizarAtletas()">
+                            <option value="TODOS">Todos Escalões</option>
+                            <option value="Minis A">Minis A</option>
+                            <option value="Minis B">Minis B</option>
+                        </select>
+                        <select id="filtro-polo-atleta" onchange="desativarFiltroDup(); renderizarAtletas()">
+                            <option value="TODOS">Todos os Polos</option>
+                            <option value="Polo de Manhente">Polo de Manhente</option>
+                            <option value="Polo Gonçalo Nunes">Polo Gonçalo Nunes</option>
+                        </select>
+                    </div>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Nome</th>
+                                    <th>Escalão</th>
+                                    <th>Polo</th>
+                                    <th>Nasc.</th>
+                                    <th>Documento</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabela-atletas"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import {
+            getFirestore, collection, addDoc, updateDoc, deleteDoc, doc,
+            onSnapshot, query, orderBy, setDoc
+        } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDHrazgKg6ezFPMyclQyc8keXXGV6QGG38",
+            authDomain: "inscricoesminis.firebaseapp.com",
+            projectId: "inscricoesminis",
+            storageBucket: "inscricoesminis.firebasestorage.app",
+            messagingSenderId: "1005618476458",
+            appId: "1:1005618476458:web:0675310fae2bfd989ae7d3",
+            measurementId: "G-6QYJ3MC92P"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        let atletas = [];
+        let torneios = [];
+        let inscricoes = [];
+        let apenasDuplicados = false;
+
+        const SENHA_ADMIN = "minis2026";
+        window.verificarSenha = () => {
+            const val = document.getElementById('admin-pass').value;
+            if (val === SENHA_ADMIN) {
+                sessionStorage.setItem('minis_admin', 'ok');
+                document.getElementById('login-overlay').style.display = 'none';
+            } else {
+                alert("Senha incorreta!");
+            }
+        };
+        if (sessionStorage.getItem('minis_admin') === 'ok') {
+            document.getElementById('login-overlay').style.display = 'none';
+        }
+
+        window.mostrarToast = (msg) => {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.style.display = 'block';
+            setTimeout(() => t.style.display = 'none', 3200);
+        };
+
+        window.mudarAba = (aba, btn) => {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById('tab-' + aba).classList.add('active');
+            btn.classList.add('active');
+        };
+
+        window.alternarModoNascimento = () => {
+            const modo = document.getElementById('a-nasc-modo').value;
+            const inputAno = document.getElementById('a-ano');
+            const inputData = document.getElementById('a-nascimento');
+
+            if (modo === 'ano') {
+                inputAno.style.display = 'block';
+                inputAno.required = true;
+                inputData.style.display = 'none';
+                inputData.required = false;
+            } else {
+                inputAno.style.display = 'none';
+                inputAno.required = false;
+                inputData.style.display = 'block';
+                inputData.required = true;
+            }
+        };
+
+        // Normaliza strings para comparação precisa de duplicados (sem acentos, espaços extras ou maiúsculas)
+        function normalizarTexto(str) {
+            return String(str || "")
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "")
+                .replace(/\s+/g, " ")
+                .trim()
+                .toLowerCase();
+        }
+
+        // Identifica IDs de atletas que possuem nome ou documento duplicado
+        function obterIdsDuplicados() {
+            const mapaNomes = {};
+            const mapaDocs = {};
+            const idsDup = new Set();
+
+            atletas.forEach(a => {
+                const n = normalizarTexto(a.nome);
+                if (n) {
+                    if (!mapaNomes[n]) mapaNomes[n] = [];
+                    mapaNomes[n].push(a.id);
+                }
+                const d = normalizarTexto(a.docNum).replace(/\s/g, "");
+                if (d) {
+                    if (!mapaDocs[d]) mapaDocs[d] = [];
+                    mapaDocs[d].push(a.id);
+                }
+            });
+
+            Object.values(mapaNomes).forEach(lista => {
+                if (lista.length > 1) lista.forEach(id => idsDup.add(id));
+            });
+            Object.values(mapaDocs).forEach(lista => {
+                if (lista.length > 1) lista.forEach(id => idsDup.add(id));
+            });
+
+            return idsDup;
+        }
+
+        window.filtrarApenasDuplicados = () => {
+            apenasDuplicados = !apenasDuplicados;
+            renderizarAtletas();
+        };
+
+        window.desativarFiltroDup = () => {
+            apenasDuplicados = false;
+        };
+
+        onSnapshot(query(collection(db, "atletas"), orderBy("nome")), (snap) => {
+            atletas = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            renderizarAtletas();
+            renderizarConvocatoria();
+        });
+
+        onSnapshot(query(collection(db, "torneios"), orderBy("data")), (snap) => {
+            torneios = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            atualizarSelectTorneios();
+            renderizarConvocatoria();
+        });
+
+        onSnapshot(collection(db, "inscricoes"), (snap) => {
+            inscricoes = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            renderizarConvocatoria();
+        });
+
+        // ================= GESTÃO DE ATLETAS =================
+        document.getElementById('form-atleta').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('a-id').value;
+            const modo = document.getElementById('a-nasc-modo').value;
+            const valorNascimento = modo === 'ano'
+                ? document.getElementById('a-ano').value.trim()
+                : document.getElementById('a-nascimento').value;
+
+            const nomeDigitado = document.getElementById('a-nome').value.trim();
+            const docNum = document.getElementById('a-doc-num').value.trim().toUpperCase();
+
+            // Verificação de duplicidade antes de guardar
+            const nomeNorm = normalizarTexto(nomeDigitado);
+            const docNorm = normalizarTexto(docNum).replace(/\s/g, "");
+
+            const duplicadoNome = atletas.find(a => a.id !== id && normalizarTexto(a.nome) === nomeNorm);
+            if (duplicadoNome) {
+                alert(`⚠️ Registo Duplicado!\n\nJá existe um atleta cadastrado com o nome "${duplicadoNome.nome}" (${duplicadoNome.escalao} • ${duplicadoNome.polo || 'Sem polo'}).`);
+                return;
+            }
+
+            if (docNorm) {
+                const duplicadoDoc = atletas.find(a => a.id !== id && normalizarTexto(a.docNum).replace(/\s/g, "") === docNorm);
+                if (duplicadoDoc) {
+                    alert(`⚠️ Documento Duplicado!\n\nO documento "${docNum}" já está associado ao atleta "${duplicadoDoc.nome}".`);
+                    return;
+                }
+            }
+
+            const dados = {
+                nome: nomeDigitado,
+                nascimento: valorNascimento,
+                escalao: document.getElementById('a-escalao').value,
+                polo: document.getElementById('a-polo').value,
+                docTipo: docNum ? document.getElementById('a-doc-tipo').value : "",
+                docNum: docNum
+            };
+
+            try {
+                if (id) {
+                    await updateDoc(doc(db, "atletas", id), dados);
+                    mostrarToast("Atleta atualizado com sucesso!");
+                } else {
+                    await addDoc(collection(db, "atletas"), dados);
+                    mostrarToast("Atleta cadastrado!");
+                }
+                limparFormAtleta();
+            } catch (err) {
+                alert("Erro ao guardar atleta: " + err.message);
+            }
+        });
+
+        window.editarAtleta = (id) => {
+            const a = atletas.find(x => x.id === id);
+            if (!a) return;
+            document.getElementById('a-id').value = a.id;
+            document.getElementById('a-nome').value = a.nome;
+
+            const nascStr = String(a.nascimento || "");
+            if (nascStr.length === 4) {
+                document.getElementById('a-nasc-modo').value = 'ano';
+                alternarModoNascimento();
+                document.getElementById('a-ano').value = nascStr;
+                document.getElementById('a-nascimento').value = "";
+            } else {
+                document.getElementById('a-nasc-modo').value = 'data';
+                alternarModoNascimento();
+                document.getElementById('a-nascimento').value = nascStr;
+                document.getElementById('a-ano').value = "";
+            }
+
+            document.getElementById('a-escalao').value = a.escalao;
+            document.getElementById('a-polo').value = a.polo || "Polo de Manhente";
+            document.getElementById('a-doc-tipo').value = a.docTipo || "CC";
+            document.getElementById('a-doc-num').value = a.docNum || "";
+            document.getElementById('form-atleta-titulo').textContent = "Editar Atleta";
+            document.getElementById('btn-salvar-atleta').textContent = "Atualizar Atleta";
+            document.getElementById('btn-cancelar-edicao').style.display = "inline-flex";
+            document.getElementById('a-nome').focus();
+        };
+
+        window.limparFormAtleta = () => {
+            document.getElementById('form-atleta').reset();
+            document.getElementById('a-id').value = "";
+            document.getElementById('a-nasc-modo').value = "ano";
+            alternarModoNascimento();
+            document.getElementById('form-atleta-titulo').textContent = "Cadastrar Atleta";
+            document.getElementById('btn-salvar-atleta').textContent = "Guardar Atleta";
+            document.getElementById('btn-cancelar-edicao').style.display = "none";
+        };
+
+        window.excluirAtleta = async (id, nome) => {
+            if (!confirm(`Tem a certeza que deseja remover o atleta ${nome}?`)) return;
+            await deleteDoc(doc(db, "atletas", id));
+            mostrarToast("Atleta removido.");
+        };
+
+        window.renderizarAtletas = () => {
+            const busca = document.getElementById('busca-atleta').value.toLowerCase();
+            const filtroEsc = document.getElementById('filtro-escalao-atleta').value;
+            const filtroPolo = document.getElementById('filtro-polo-atleta').value;
+            const tbody = document.getElementById('tabela-atletas');
+
+            // Atualiza contadores gerais por escalão e polo
+            document.getElementById('stat-total').textContent = atletas.length;
+            document.getElementById('stat-minis-a').textContent = atletas.filter(a => a.escalao === "Minis A").length;
+            document.getElementById('stat-minis-b').textContent = atletas.filter(a => a.escalao === "Minis B").length;
+            document.getElementById('stat-manhente').textContent = atletas.filter(a => a.polo === "Polo de Manhente").length;
+            document.getElementById('stat-goncalo').textContent = atletas.filter(a => a.polo === "Polo Gonçalo Nunes").length;
+
+            // Verifica duplicados existentes na base
+            const idsDup = obterIdsDuplicados();
+            const alertaDup = document.getElementById('alerta-duplicados');
+            if (idsDup.size > 0) {
+                alertaDup.style.display = 'flex';
+                document.getElementById('qtd-duplicados').textContent = idsDup.size;
+            } else {
+                alertaDup.style.display = 'none';
+                apenasDuplicados = false;
+            }
+
+            const filtrados = atletas.filter(a => {
+                if (apenasDuplicados) return idsDup.has(a.id);
+                const docStr = (a.docNum || "").toLowerCase();
+                const matchTexto = a.nome.toLowerCase().includes(busca) || docStr.includes(busca) || String(a.nascimento || "").includes(busca);
+                const matchEsc = filtroEsc === "TODOS" || a.escalao === filtroEsc;
+                const matchPolo = filtroPolo === "TODOS" || (a.polo || "Não definido") === filtroPolo;
+                return matchTexto && matchEsc && matchPolo;
+            });
+
+            document.getElementById('total-atletas').textContent = filtrados.length;
+            tbody.innerHTML = filtrados.map(a => {
+                const ehDup = idsDup.has(a.id);
+                return `
+                <tr class="${ehDup ? 'row-dup' : ''}">
+                    <td>
+                        <strong>${a.nome}</strong>
+                        ${ehDup ? `<span class="badge badge-dup">Duplicado</span>` : ''}
+                    </td>
+                    <td><span class="badge ${a.escalao === 'Minis A' ? 'badge-a' : 'badge-b'}">${a.escalao}</span></td>
+                    <td><span class="badge badge-polo">${a.polo || "Não definido"}</span></td>
+                    <td>${formatarNascimento(a.nascimento)}</td>
+                    <td>${a.docNum ? `${a.docTipo}: <code>${a.docNum}</code>` : `<span style="color:var(--light-gray); font-size:0.8rem;">—</span>`}</td>
+                    <td>
+                        <button class="btn-secondary btn-sm" title="Editar Atleta" onclick="editarAtleta('${a.id}')">✏️</button>
+                        <button class="btn-danger" title="Excluir Atleta" onclick="excluirAtleta('${a.id}', '${a.nome.replace(/'/g, "\\'")}')">🗑️</button>
+                    </td>
+                </tr>
+            `}).join('');
+        };
+
+        // ================= GESTÃO DE TORNEIOS =================
+        document.getElementById('form-torneio').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('t-id').value;
+            const escalao = document.getElementById('t-escalao').value;
+            const nome = document.getElementById('t-nome').value.trim();
+            const data = document.getElementById('t-data').value;
+
+            // Verifica duplicidade de torneio
+            const dupTorneio = torneios.find(t => t.id !== id && t.escalao === escalao && t.data === data && normalizarTexto(t.nome) === normalizarTexto(nome));
+            if (dupTorneio) {
+                alert(`⚠️ Torneio Duplicado!\n\nJá existe o torneio "${dupTorneio.nome}" para ${escalao} no dia ${formatarData(data)}.`);
+                return;
+            }
+
+            const dados = {
+                escalao,
+                nome,
+                data,
+                dataLimite: document.getElementById('t-limite').value,
+                pavilhao: document.getElementById('t-pavilhao').value.trim() || "A definir"
+            };
+
+            try {
+                if (id) {
+                    await updateDoc(doc(db, "torneios", id), dados);
+                    mostrarToast("Torneio atualizado com sucesso!");
+                    limparFormTorneio();
+                } else {
+                    const docRef = await addDoc(collection(db, "torneios"), dados);
+                    limparFormTorneio();
+                    mostrarToast("Torneio adicionado!");
+                    setTimeout(() => {
+                        document.getElementById('select-torneio-ativo').value = docRef.id;
+                        renderizarConvocatoria();
+                    }, 400);
+                }
+            } catch (err) {
+                alert("Erro ao guardar torneio: " + err.message);
+            }
+        });
+
+        window.editarTorneioAtual = () => {
+            const id = document.getElementById('select-torneio-ativo').value;
+            const t = torneios.find(x => x.id === id);
+            if (!t) return;
+
+            document.getElementById('t-id').value = t.id;
+            document.getElementById('t-escalao').value = t.escalao;
+            document.getElementById('t-nome').value = t.nome;
+            document.getElementById('t-data').value = t.data;
+            document.getElementById('t-limite').value = t.dataLimite || "";
+            document.getElementById('t-pavilhao').value = t.pavilhao === "A definir" ? "" : t.pavilhao;
+
+            document.getElementById('form-torneio-titulo').textContent = "Editar Torneio";
+            document.getElementById('btn-salvar-torneio').textContent = "Atualizar Torneio";
+            document.getElementById('btn-cancelar-torneio').style.display = "inline-flex";
+            document.getElementById('t-nome').focus();
+        };
+
+        window.limparFormTorneio = () => {
+            document.getElementById('form-torneio').reset();
+            document.getElementById('t-id').value = "";
+            document.getElementById('form-torneio-titulo').textContent = "Novo Torneio";
+            document.getElementById('btn-salvar-torneio').textContent = "Guardar Torneio";
+            document.getElementById('btn-cancelar-torneio').style.display = "none";
+        };
+
+        window.importarCalendarioAVB = async () => {
+            if (!confirm("Isto vai importar todas as datas do Calendário AVB 2026/27 (Minis A e Minis B), ignorando as que já existirem. Continuar?")) return;
+
+            const calendarioAVB = [
+                { escalao: "Minis A", nome: "I Torneio Clínica Dentária S. Dâmaso", dataLimite: "2026-10-18", data: "2026-10-25", pavilhao: "Municipal de Adães" },
+                { escalao: "Minis A", nome: "II Torneio Clínica Dentária S. Dâmaso", dataLimite: "2026-11-22", data: "2026-11-29", pavilhao: "Municipal de Adães" },
+                { escalao: "Minis A", nome: "III Torneio Clínica Dentária S. Dâmaso", dataLimite: "2026-12-13", data: "2026-12-20", pavilhao: "Municipal de Adães" },
+                { escalao: "Minis A", nome: "IV Torneio Clínica Dentária S. Dâmaso", dataLimite: "2027-01-17", data: "2027-01-24", pavilhao: "Municipal de Adães" },
+                { escalao: "Minis A", nome: "V Torneio Clínica Dentária S. Dâmaso", dataLimite: "2027-02-21", data: "2027-02-28", pavilhao: "Municipal de Adães" },
+                { escalao: "Minis A", nome: "VI Torneio Clínica Dentária S. Dâmaso", dataLimite: "2027-03-14", data: "2027-03-21", pavilhao: "Municipal de Adães" },
+                { escalao: "Minis A", nome: "VII Torneio Clínica Dentária S. Dâmaso", dataLimite: "2027-04-18", data: "2027-04-25", pavilhao: "Municipal de Adães" },
+                { escalao: "Minis A", nome: "VIII Torneio Clínica Dentária S. Dâmaso", dataLimite: "2027-05-16", data: "2027-05-23", pavilhao: "Municipal de Adães" },
+                { escalao: "Minis A", nome: "Festa Mini-Voleibol Clínica Dentária S. Dâmaso", dataLimite: "2027-06-13", data: "2027-06-20", pavilhao: "A definir" },
+                { escalao: "Minis B", nome: "I Torneio Clínica Dentária S. Dâmaso", dataLimite: "2026-10-04", data: "2026-10-11", pavilhao: "Municipal de Adães" },
+                { escalao: "Minis B", nome: "II Torneio Clínica Dentária S. Dâmaso", dataLimite: "2026-11-08", data: "2026-11-15", pavilhao: "Municipal de Adães" },
+                { escalao: "Minis B", nome: "III Torneio Clínica Dentária S. Dâmaso", dataLimite: "2026-12-06", data: "2026-12-13", pavilhao: "Municipal de Adães" },
+                { escalao: "Minis B", nome: "IV Torneio Clínica Dentária S. Dâmaso", dataLimite: "2027-01-03", data: "2027-01-10", pavilhao: "Municipal de Adães" },
+                { escalao: "Minis B", nome: "V Torneio Clínica Dentária S. Dâmaso", dataLimite: "2027-02-07", data: "2027-02-14", pavilhao: "Municipal de Adães" },
+                { escalao: "Minis B", nome: "VI Torneio Clínica Dentária S. Dâmaso", dataLimite: "2027-03-07", data: "2027-03-14", pavilhao: "Municipal de Adães" },
+                { escalao: "Minis B", nome: "VII Torneio Clínica Dentária S. Dâmaso", dataLimite: "2027-04-04", data: "2027-04-11", pavilhao: "Municipal de Adães" },
+                { escalao: "Minis B", nome: "VIII Torneio Clínica Dentária S. Dâmaso", dataLimite: "2027-05-09", data: "2027-05-16", pavilhao: "Municipal de Adães" },
+                { escalao: "Minis B", nome: "Campeonato Regional", dataLimite: "2027-05-23", data: "2027-05-30", pavilhao: "A definir" },
+                { escalao: "Minis B", nome: "Festa Mini-Voleibol Clínica Dentária S. Dâmaso", dataLimite: "2027-06-13", data: "2027-06-20", pavilhao: "A definir" }
+            ];
+
+            let importados = 0;
+            for (const item of calendarioAVB) {
+                const jaExiste = torneios.some(t => t.escalao === item.escalao && t.data === item.data && normalizarTexto(t.nome) === normalizarTexto(item.nome));
+                if (!jaExiste) {
+                    await addDoc(collection(db, "torneios"), item);
+                    importados++;
+                }
+            }
+            mostrarToast(importados > 0 ? `${importados} torneios importados!` : "Todos os torneios AVB já estavam importados.");
+        };
+
+        function atualizarSelectTorneios() {
+            const sel = document.getElementById('select-torneio-ativo');
+            const atual = sel.value;
+            if (torneios.length === 0) {
+                sel.innerHTML = '<option value="">Nenhum torneio cadastrado ainda</option>';
+                return;
+            }
+            sel.innerHTML = torneios.map(t =>
+                `<option value="${t.id}">[${t.escalao}] ${formatarData(t.data)} - ${t.nome}</option>`
+            ).join('');
+
+            if (atual && torneios.some(t => t.id === atual)) {
+                sel.value = atual;
+            }
+        }
+
+        window.excluirTorneioAtual = async () => {
+            const id = document.getElementById('select-torneio-ativo').value;
+            if (!id || !confirm("Excluir este torneio?")) return;
+            await deleteDoc(doc(db, "torneios", id));
+            limparFormTorneio();
+            mostrarToast("Torneio excluído.");
+        };
+
+        // ================= CONVOCATÓRIA E STATUS =================
+        window.renderizarConvocatoria = () => {
+            const torneioId = document.getElementById('select-torneio-ativo').value;
+            const painel = document.getElementById('painel-torneio-detalhes');
+            const torneio = torneios.find(t => t.id === torneioId);
+
+            if (!torneio) {
+                painel.style.display = 'none';
+                return;
+            }
+
+            painel.style.display = 'block';
+            document.getElementById('info-t-titulo').textContent = `[${torneio.escalao}] ${torneio.nome}`;
+            document.getElementById('info-t-sub').textContent = `📅 Jogo: ${formatarData(torneio.data)} • ⏳ Limite Inscrição: ${formatarData(torneio.dataLimite)} • 📍 ${torneio.pavilhao}`;
+
+            // Contadores totais deste torneio (independentemente do filtro visual)
+            const inscTorneio = inscricoes.filter(i => i.torneioId === torneioId);
+            const aut = inscTorneio.filter(i => i.status === 'autorizado').length;
+            const pen = inscTorneio.filter(i => i.status === 'pendente').length;
+            const rec = inscTorneio.filter(i => i.status === 'recusado').length;
+
+            document.getElementById('count-aut').textContent = aut;
+            document.getElementById('count-pen').textContent = pen;
+            document.getElementById('count-rec').textContent = rec;
+
+            // Filtro de exibição da lista de atletas
+            const filtroVis = document.getElementById('filtro-conv-escalao').value;
+            const atletasExibir = atletas.filter(a => {
+                const jaEstaInscrito = inscTorneio.some(i => i.atletaId === a.id);
+                if (jaEstaInscrito) return true; // Sempre mostra quem já está convocado neste torneio
+                if (filtroVis === "TODOS") return true;
+                if (filtroVis === "DO_TORNEIO") return a.escalao === torneio.escalao;
+                return a.escalao === filtroVis;
+            });
+
+            const container = document.getElementById('lista-convocatoria');
+
+            if (atletasExibir.length === 0) {
+                container.innerHTML = `<p style="color:var(--mid-gray); padding:16px 0;">Nenhum atleta encontrado para este filtro.</p>`;
+                return;
+            }
+
+            container.innerHTML = atletasExibir.map(atleta => {
+                const insc = inscTorneio.find(i => i.atletaId === atleta.id);
+                const status = insc ? insc.status : 'nao_convocado';
+
+                let badgeHtml = `<span class="badge" style="background:#e4e4e7; color:#3f3f46;">Não convocado</span>`;
+                if (status === 'pendente') badgeHtml = `<span class="badge status-pendente">⏳ Aguardando Pais</span>`;
+                if (status === 'autorizado') badgeHtml = `<span class="badge status-autorizado">✅ Autorizado</span>`;
+                if (status === 'recusado') badgeHtml = `<span class="badge status-recusado">❌ Recusado</span>`;
+
+                const badgeEscalao = `<span class="badge ${atleta.escalao === 'Minis A' ? 'badge-a' : 'badge-b'}" style="margin-left:6px; vertical-align:middle;">${atleta.escalao}</span>`;
+                const poloInfo = atleta.polo ? `${atleta.polo} • ` : "";
+                const docInfo = atleta.docNum ? `${atleta.docTipo}: ${atleta.docNum} • ` : "";
+
+                return `
+                    <div class="convocatoria-item">
+                        <div class="convocatoria-info">
+                            <div><strong>${atleta.nome}</strong>${badgeEscalao}</div>
+                            <small>${poloInfo}${docInfo}Nasc: ${formatarNascimento(atleta.nascimento)}</small>
+                        </div>
+                        <div class="status-actions">
+                            ${badgeHtml}
+                            ${status === 'nao_convocado' ? `
+                                <button class="btn-primary btn-sm" style="width:auto;" onclick="definirStatus('${torneioId}', '${atleta.id}', 'pendente')">Convocar</button>
+                            ` : `
+                                <button class="btn-secondary btn-sm" title="Marcar Autorizado" onclick="definirStatus('${torneioId}', '${atleta.id}', 'autorizado')">✅</button>
+                                <button class="btn-secondary btn-sm" title="Marcar Pendente" onclick="definirStatus('${torneioId}', '${atleta.id}', 'pendente')">⏳</button>
+                                <button class="btn-secondary btn-sm" title="Marcar Recusado" onclick="definirStatus('${torneioId}', '${atleta.id}', 'recusado')">❌</button>
+                                <button class="btn-danger" title="Remover da convocatória" onclick="removerConvocatoria('${torneioId}', '${atleta.id}')">Remover</button>
+                            `}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        };
+
+        window.definirStatus = async (torneioId, atletaId, status) => {
+            const docId = `${torneioId}_${atletaId}`;
+            await setDoc(doc(db, "inscricoes", docId), {
+                torneioId,
+                atletaId,
+                status,
+                atualizadoEm: new Date().toISOString()
+            });
+            mostrarToast("Estado atualizado!");
+        };
+
+        window.removerConvocatoria = async (torneioId, atletaId) => {
+            const docId = `${torneioId}_${atletaId}`;
+            await deleteDoc(doc(db, "inscricoes", docId));
+            mostrarToast("Atleta removido deste torneio.");
+        };
+
+        window.convocarPorFiltro = async (alvo) => {
+            const torneioId = document.getElementById('select-torneio-ativo').value;
+            const torneio = torneios.find(t => t.id === torneioId);
+            if (!torneio) return;
+
+            const listaAlvo = alvo === 'TODOS'
+                ? atletas
+                : atletas.filter(a => a.escalao === alvo);
+
+            let adicionados = 0;
+
+            for (const atleta of listaAlvo) {
+                const jaEsta = inscricoes.some(i => i.torneioId === torneioId && i.atletaId === atleta.id);
+                if (!jaEsta) {
+                    const docId = `${torneioId}_${atleta.id}`;
+                    await setDoc(doc(db, "inscricoes", docId), {
+                        torneioId,
+                        atletaId,
+                        status: 'pendente',
+                        atualizadoEm: new Date().toISOString()
+                    });
+                    adicionados++;
+                }
+            }
+
+            if (adicionados > 0) {
+                mostrarToast(`${adicionados} atletas (${alvo === 'TODOS' ? 'Todos' : alvo}) convocados!`);
+                // Ajusta o filtro visual se convocou um escalão diferente do padrão do torneio
+                if (alvo === 'TODOS' || alvo !== torneio.escalao) {
+                    document.getElementById('filtro-conv-escalao').value = 'TODOS';
+                    renderizarConvocatoria();
+                }
+            } else {
+                mostrarToast(`Todos os atletas de ${alvo === 'TODOS' ? 'todos os escalões' : alvo} já estão convocados.`);
+            }
+        };
+
+        function formatarData(iso) {
+            if (!iso) return "-";
+            const [y, m, d] = iso.split('-');
+            return `${d}/${m}/${y}`;
+        }
+
+        function formatarNascimento(val) {
+            if (!val) return "-";
+            const str = String(val);
+            if (str.length === 4) return str;
+            return formatarData(str);
+        }
+    </script>
+</body>
+</html>
