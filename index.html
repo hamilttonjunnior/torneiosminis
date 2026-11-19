@@ -97,14 +97,15 @@
             cursor: pointer; border: none; border-radius: 8px; font-weight: 600; font-size: 0.9rem;
             padding: 10px 16px; transition: 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
         }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
         .btn-primary { background: var(--black); color: white; width: 100%; }
-        .btn-primary:hover { background: var(--dark-gray); }
+        .btn-primary:hover:not(:disabled) { background: var(--dark-gray); }
         .btn-secondary { background: #e4e4e7; color: var(--black); border: 1px solid #d4d4d8; }
-        .btn-secondary:hover { background: #d4d4d8; }
+        .btn-secondary:hover:not(:disabled) { background: #d4d4d8; }
         .btn-dark-outline { background: white; color: var(--black); border: 1px solid var(--black); }
-        .btn-dark-outline:hover { background: var(--black); color: white; }
+        .btn-dark-outline:hover:not(:disabled) { background: var(--black); color: white; }
         .btn-danger { background: #fafafa; color: var(--danger); border: 1px solid #fca5a5; padding: 6px 10px; font-size: 0.8rem; }
-        .btn-danger:hover { background: var(--danger); color: white; border-color: var(--danger); }
+        .btn-danger:hover:not(:disabled) { background: var(--danger); color: white; border-color: var(--danger); }
         .btn-sm { padding: 6px 11px; font-size: 0.8rem; }
 
         /* Resumo de Polos e Escalões (5 cards) */
@@ -164,7 +165,7 @@
             display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px;
             background: #fafafa; padding: 14px; border-radius: 10px; margin-bottom: 16px; border: 1px solid var(--border);
         }
-        .torneio-btn-group { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+        .torneio-btn-group { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; width: 100%; }
 
         .toast {
             position: fixed; bottom: 20px; right: 20px; background: var(--black); color: white;
@@ -268,14 +269,15 @@
                                 </div>
                                 <div style="display:flex; gap:6px;">
                                     <button type="button" class="btn-secondary btn-sm" onclick="editarTorneioAtual()">✏️ Editar</button>
-                                    <button type="button" class="btn-danger" onclick="excluirTorneioAtual()">🗑️ Excluir</button>
+                                    <button type="button" class="btn-danger" onclick="excluirTorneioAtual()">🗑️ Excluir Torneio</button>
                                 </div>
                             </div>
 
                             <div class="torneio-btn-group">
-                                <button type="button" class="btn-dark-outline btn-sm" onclick="convocarPorFiltro('Minis A')">+ Convocar Minis A</button>
-                                <button type="button" class="btn-dark-outline btn-sm" onclick="convocarPorFiltro('Minis B')">+ Convocar Minis B</button>
-                                <button type="button" class="btn-secondary btn-sm" onclick="convocarPorFiltro('TODOS')">+ Convocar Todos</button>
+                                <button type="button" class="btn-dark-outline btn-sm" onclick="convocarPorFiltro('Minis A', this)">+ Convocar Minis A</button>
+                                <button type="button" class="btn-dark-outline btn-sm" onclick="convocarPorFiltro('Minis B', this)">+ Convocar Minis B</button>
+                                <button type="button" class="btn-secondary btn-sm" onclick="convocarPorFiltro('TODOS', this)">+ Convocar Todos</button>
+                                <button type="button" class="btn-danger" style="margin-left:auto;" onclick="desconvocarTodosDoTorneio(this)">Desconvocar Todos</button>
                             </div>
                         </div>
 
@@ -429,7 +431,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import {
             getFirestore, collection, addDoc, updateDoc, deleteDoc, doc,
-            onSnapshot, query, orderBy, setDoc
+            onSnapshot, query, orderBy, setDoc, writeBatch
         } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
         const firebaseConfig = {
@@ -496,7 +498,6 @@
             }
         };
 
-        // Normaliza strings para comparação precisa de duplicados (sem acentos, espaços extras ou maiúsculas)
         function normalizarTexto(str) {
             return String(str || "")
                 .normalize("NFD")
@@ -506,7 +507,6 @@
                 .toLowerCase();
         }
 
-        // Identifica IDs de atletas que possuem nome ou documento duplicado
         function obterIdsDuplicados() {
             const mapaNomes = {};
             const mapaDocs = {};
@@ -573,7 +573,6 @@
             const nomeDigitado = document.getElementById('a-nome').value.trim();
             const docNum = document.getElementById('a-doc-num').value.trim().toUpperCase();
 
-            // Verificação de duplicidade antes de guardar
             const nomeNorm = normalizarTexto(nomeDigitado);
             const docNorm = normalizarTexto(docNum).replace(/\s/g, "");
 
@@ -665,14 +664,12 @@
             const filtroPolo = document.getElementById('filtro-polo-atleta').value;
             const tbody = document.getElementById('tabela-atletas');
 
-            // Atualiza contadores gerais por escalão e polo
             document.getElementById('stat-total').textContent = atletas.length;
-            document.getElementById('stat-minis-a').textContent = atletas.filter(a => a.escalao === "Minis A").length;
-            document.getElementById('stat-minis-b').textContent = atletas.filter(a => a.escalao === "Minis B").length;
+            document.getElementById('stat-minis-a').textContent = atletas.filter(a => (a.escalao || "").trim() === "Minis A").length;
+            document.getElementById('stat-minis-b').textContent = atletas.filter(a => (a.escalao || "").trim() === "Minis B").length;
             document.getElementById('stat-manhente').textContent = atletas.filter(a => a.polo === "Polo de Manhente").length;
             document.getElementById('stat-goncalo').textContent = atletas.filter(a => a.polo === "Polo Gonçalo Nunes").length;
 
-            // Verifica duplicados existentes na base
             const idsDup = obterIdsDuplicados();
             const alertaDup = document.getElementById('alerta-duplicados');
             if (idsDup.size > 0) {
@@ -687,7 +684,7 @@
                 if (apenasDuplicados) return idsDup.has(a.id);
                 const docStr = (a.docNum || "").toLowerCase();
                 const matchTexto = a.nome.toLowerCase().includes(busca) || docStr.includes(busca) || String(a.nascimento || "").includes(busca);
-                const matchEsc = filtroEsc === "TODOS" || a.escalao === filtroEsc;
+                const matchEsc = filtroEsc === "TODOS" || (a.escalao || "").trim() === filtroEsc;
                 const matchPolo = filtroPolo === "TODOS" || (a.polo || "Não definido") === filtroPolo;
                 return matchTexto && matchEsc && matchPolo;
             });
@@ -721,7 +718,6 @@
             const nome = document.getElementById('t-nome').value.trim();
             const data = document.getElementById('t-data').value;
 
-            // Verifica duplicidade de torneio
             const dupTorneio = torneios.find(t => t.id !== id && t.escalao === escalao && t.data === data && normalizarTexto(t.nome) === normalizarTexto(nome));
             if (dupTorneio) {
                 alert(`⚠️ Torneio Duplicado!\n\nJá existe o torneio "${dupTorneio.nome}" para ${escalao} no dia ${formatarData(data)}.`);
@@ -806,14 +802,17 @@
                 { escalao: "Minis B", nome: "Festa Mini-Voleibol Clínica Dentária S. Dâmaso", dataLimite: "2027-06-13", data: "2027-06-20", pavilhao: "A definir" }
             ];
 
+            const batch = writeBatch(db);
             let importados = 0;
             for (const item of calendarioAVB) {
                 const jaExiste = torneios.some(t => t.escalao === item.escalao && t.data === item.data && normalizarTexto(t.nome) === normalizarTexto(item.nome));
                 if (!jaExiste) {
-                    await addDoc(collection(db, "torneios"), item);
+                    const novoRef = doc(collection(db, "torneios"));
+                    batch.set(novoRef, item);
                     importados++;
                 }
             }
+            if (importados > 0) await batch.commit();
             mostrarToast(importados > 0 ? `${importados} torneios importados!` : "Todos os torneios AVB já estavam importados.");
         };
 
@@ -856,7 +855,6 @@
             document.getElementById('info-t-titulo').textContent = `[${torneio.escalao}] ${torneio.nome}`;
             document.getElementById('info-t-sub').textContent = `📅 Jogo: ${formatarData(torneio.data)} • ⏳ Limite Inscrição: ${formatarData(torneio.dataLimite)} • 📍 ${torneio.pavilhao}`;
 
-            // Contadores totais deste torneio (independentemente do filtro visual)
             const inscTorneio = inscricoes.filter(i => i.torneioId === torneioId);
             const aut = inscTorneio.filter(i => i.status === 'autorizado').length;
             const pen = inscTorneio.filter(i => i.status === 'pendente').length;
@@ -866,14 +864,13 @@
             document.getElementById('count-pen').textContent = pen;
             document.getElementById('count-rec').textContent = rec;
 
-            // Filtro de exibição da lista de atletas
             const filtroVis = document.getElementById('filtro-conv-escalao').value;
             const atletasExibir = atletas.filter(a => {
                 const jaEstaInscrito = inscTorneio.some(i => i.atletaId === a.id);
-                if (jaEstaInscrito) return true; // Sempre mostra quem já está convocado neste torneio
+                if (jaEstaInscrito) return true;
                 if (filtroVis === "TODOS") return true;
-                if (filtroVis === "DO_TORNEIO") return a.escalao === torneio.escalao;
-                return a.escalao === filtroVis;
+                if (filtroVis === "DO_TORNEIO") return (a.escalao || "").trim() === (torneio.escalao || "").trim();
+                return (a.escalao || "").trim() === filtroVis;
             });
 
             const container = document.getElementById('lista-convocatoria');
@@ -935,40 +932,104 @@
             mostrarToast("Atleta removido deste torneio.");
         };
 
-        window.convocarPorFiltro = async (alvo) => {
+        window.convocarPorFiltro = async (alvo, btn) => {
             const torneioId = document.getElementById('select-torneio-ativo').value;
             const torneio = torneios.find(t => t.id === torneioId);
-            if (!torneio) return;
+            if (!torneio) {
+                alert("Selecione um torneio primeiro.");
+                return;
+            }
+
+            if (atletas.length === 0) {
+                alert("A lista de atletas ainda está a carregar ou está vazia.");
+                return;
+            }
 
             const listaAlvo = alvo === 'TODOS'
                 ? atletas
-                : atletas.filter(a => a.escalao === alvo);
+                : atletas.filter(a => (a.escalao || "").trim() === alvo);
 
-            let adicionados = 0;
-
-            for (const atleta of listaAlvo) {
-                const jaEsta = inscricoes.some(i => i.torneioId === torneioId && i.atletaId === atleta.id);
-                if (!jaEsta) {
-                    const docId = `${torneioId}_${atleta.id}`;
-                    await setDoc(doc(db, "inscricoes", docId), {
-                        torneioId,
-                        atletaId,
-                        status: 'pendente',
-                        atualizadoEm: new Date().toISOString()
-                    });
-                    adicionados++;
-                }
+            if (listaAlvo.length === 0) {
+                alert(`Não existem atletas cadastrados no escalão ${alvo}.`);
+                return;
             }
 
-            if (adicionados > 0) {
-                mostrarToast(`${adicionados} atletas (${alvo === 'TODOS' ? 'Todos' : alvo}) convocados!`);
-                // Ajusta o filtro visual se convocou um escalão diferente do padrão do torneio
-                if (alvo === 'TODOS' || alvo !== torneio.escalao) {
-                    document.getElementById('filtro-conv-escalao').value = 'TODOS';
-                    renderizarConvocatoria();
+            const textoOriginal = btn ? btn.textContent : "";
+            if (btn) {
+                btn.disabled = true;
+                btn.textContent = "A convocar...";
+            }
+
+            try {
+                const batch = writeBatch(db);
+                let adicionados = 0;
+
+                for (const atleta of listaAlvo) {
+                    const jaEsta = inscricoes.some(i => i.torneioId === torneioId && i.atletaId === atleta.id);
+                    if (!jaEsta) {
+                        const docId = `${torneioId}_${atleta.id}`;
+                        batch.set(doc(db, "inscricoes", docId), {
+                            torneioId,
+                            atletaId,
+                            status: 'pendente',
+                            atualizadoEm: new Date().toISOString()
+                        });
+                        adicionados++;
+                    }
                 }
-            } else {
-                mostrarToast(`Todos os atletas de ${alvo === 'TODOS' ? 'todos os escalões' : alvo} já estão convocados.`);
+
+                if (adicionados > 0) {
+                    await batch.commit();
+                    mostrarToast(`✅ ${adicionados} atletas (${alvo === 'TODOS' ? 'Todos' : alvo}) convocados!`);
+                    if (alvo === 'TODOS' || alvo !== (torneio.escalao || "").trim()) {
+                        document.getElementById('filtro-conv-escalao').value = 'TODOS';
+                    }
+                    renderizarConvocatoria();
+                } else {
+                    mostrarToast(`Todos os atletas de ${alvo === 'TODOS' ? 'todos os escalões' : alvo} já estavam convocados.`);
+                }
+            } catch (err) {
+                alert("Erro ao convocar em lote: " + err.message);
+            } finally {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.textContent = textoOriginal;
+                }
+            }
+        };
+
+        window.desconvocarTodosDoTorneio = async (btn) => {
+            const torneioId = document.getElementById('select-torneio-ativo').value;
+            if (!torneioId) return;
+
+            const inscTorneio = inscricoes.filter(i => i.torneioId === torneioId);
+            if (inscTorneio.length === 0) {
+                mostrarToast("Não há atletas convocados neste torneio.");
+                return;
+            }
+
+            if (!confirm(`Tem a certeza que deseja remover TODOS os ${inscTorneio.length} atletas convocados deste torneio (incluindo os já autorizados)?`)) return;
+
+            const textoOriginal = btn ? btn.textContent : "";
+            if (btn) {
+                btn.disabled = true;
+                btn.textContent = "A remover...";
+            }
+
+            try {
+                const batch = writeBatch(db);
+                inscTorneio.forEach(i => {
+                    batch.delete(doc(db, "inscricoes", i.id));
+                });
+                await batch.commit();
+                mostrarToast("Todos os atletas foram desconvocados deste torneio.");
+            } catch (err) {
+                alert("Erro ao desconvocar: " + err.message);
+            } finally {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.textContent = textoOriginal;
+                }
             }
         };
 
