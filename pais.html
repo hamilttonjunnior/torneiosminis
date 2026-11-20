@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Autorização de Torneios | Mini-Voleibol</title>
+    <style>
+        :root {
+            --black: #0a0a0a;
+            --dark-gray: #1f2937;
+            --mid-gray: #4b5563;
+            --light-gray: #9ca3af;
+            --bg: #f4f4f5;
+            --card: #ffffff;
+            --text: #111827;
+            --border: #d4d4d8;
+            --success: #16a34a;
+            --success-bg: #dcfce7;
+            --warning: #d97706;
+            --warning-bg: #fef3c7;
+            --danger: #dc2626;
+            --danger-bg: #fee2e2;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
+        body { background: var(--bg); color: var(--text); line-height: 1.5; padding-bottom: 40px; -webkit-tap-highlight-color: transparent; }
+
+        header {
+            background: var(--black); color: white; padding: 16px 20px;
+            display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+            border-bottom: 3px solid var(--dark-gray);
+        }
+        .brand { display: flex; align-items: center; gap: 12px; }
+        .brand img {
+            height: 50px; width: 50px; object-fit: contain; background: white;
+            border-radius: 10px; padding: 4px; flex-shrink: 0;
+        }
+        .brand h1 { font-size: 1.15rem; font-weight: 700; letter-spacing: -0.3px; }
+        .brand span { font-size: 0.84rem; color: var(--light-gray); display: block; }
+
+        .btn-lista-publica {
+            color: #f4f4f5; text-decoration: none; font-size: 0.85rem; padding: 9px 14px;
+            border-radius: 8px; border: 1px solid #3f3f46; background: #18181b; transition: 0.2s; font-weight: 600;
+            text-align: center;
+        }
+        .btn-lista-publica:hover { background: white; color: var(--black); border-color: white; }
+
+        .container { max-width: 680px; margin: 20px auto; padding: 0 16px; }
+
+        .card {
+            background: var(--card); border-radius: 14px; padding: 20px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.06); border: 1px solid var(--border);
+            margin-bottom: 18px;
+        }
+        .card h2 { font-size: 1.08rem; margin-bottom: 6px; color: var(--black); }
+        .card p.sub { font-size: 0.88rem; color: var(--mid-gray); margin-bottom: 16px; }
+
+        .escalao-selector { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+        .esc-btn {
+            padding: 12px; border: 2px solid var(--border); border-radius: 10px; background: #fff;
+            font-weight: 700; font-size: 0.95rem; color: var(--mid-gray); cursor: pointer; transition: 0.2s;
+            touch-action: manipulation;
+        }
+        .esc-btn:hover { border-color: var(--dark-gray); color: var(--black); }
+        .esc-btn.active { border-color: var(--black); background: var(--black); color: white; }
+
+        .form-group { margin-bottom: 16px; }
+        label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px; color: var(--dark-gray); }
+        select, input {
+            width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 10px;
+            font-size: 16px; background: #fff; color: var(--text);
+        }
+        select:focus, input:focus { outline: none; border-color: var(--black); box-shadow: 0 0 0 3px rgba(0,0,0,0.08); }
+
+        /* Cards de Torneio */
+        .torneio-card {
+            border: 1px solid var(--border); border-radius: 12px; padding: 16px;
+            margin-bottom: 14px; background: #fafafa; transition: 0.2s;
+        }
+        .torneio-card.autorizado { border-left: 5px solid var(--success); background: #f0fdf4; }
+        .torneio-card.recusado { border-left: 5px solid var(--danger); background: #fef2f2; }
+        .torneio-card.pendente { border-left: 5px solid var(--black); background: #ffffff; }
+
+        .t-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 10px; }
+        .t-title { font-weight: 700; font-size: 1.02rem; color: var(--black); line-height: 1.3; }
+        .t-meta { font-size: 0.86rem; color: var(--mid-gray); margin-bottom: 14px; display: flex; flex-direction: column; gap: 4px; }
+
+        .badge {
+            padding: 4px 10px; border-radius: 999px; font-size: 0.75rem; font-weight: 700; white-space: nowrap; flex-shrink: 0;
+        }
+        .badge-pendente { background: var(--warning-bg); color: #92400e; }
+        .badge-autorizado { background: var(--success-bg); color: #166534; }
+        .badge-recusado { background: var(--danger-bg); color: #991b1b; }
+
+        .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .btn-action {
+            padding: 12px 10px; border: none; border-radius: 8px; font-weight: 700; font-size: 0.92rem;
+            cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 6px;
+            touch-action: manipulation;
+        }
+        .btn-aceitar { background: var(--black); color: white; }
+        .btn-aceitar:hover { background: var(--dark-gray); }
+        .btn-recusar { background: white; color: var(--dark-gray); border: 1px solid var(--border); }
+        .btn-recusar:hover { background: var(--danger); color: white; border-color: var(--danger); }
+
+        .pin-box {
+            background: #fafafa; border: 1px dashed var(--dark-gray); padding: 14px; border-radius: 10px; margin-bottom: 6px;
+        }
+        .pin-box label { color: var(--black); }
+        .pin-box input { max-width: 220px; letter-spacing: 3px; font-weight: 700; }
+
+        .empty-state { text-align: center; padding: 28px 16px; color: var(--mid-gray); font-size: 0.92rem; }
+        .toast {
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+            background: var(--black); color: white; padding: 12px 22px; border-radius: 999px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3); display: none; z-index: 2000; font-size: 0.9rem; font-weight: 600;
+            border: 1px solid var(--dark-gray); white-space: nowrap; max-width: 92vw; overflow: hidden; text-overflow: ellipsis;
+        }
+
+        /* ================= RESPONSIVIDADE MOBILE ================= */
+        @media (max-width: 600px) {
+            header { padding: 14px 16px; flex-direction: column; align-items: stretch; }
+            .brand img { height: 44px; width: 44px; }
+            .brand h1 { font-size: 1.06rem; }
+            .btn-lista-publica { width: 100%; }
+
+            .container { margin: 14px auto; padding: 0 12px; }
+            .card { padding: 16px 14px; }
+
+            .pin-box input { max-width: 100%; }
+
+            .t-header { flex-direction: column; align-items: flex-start; gap: 6px; }
+            .badge { align-self: flex-start; }
+
+            .actions { grid-template-columns: 1fr; gap: 8px; }
+            .btn-action { padding: 13px; font-size: 0.95rem; }
+
+            .toast { left: 16px; right: 16px; bottom: 16px; transform: none; text-align: center; border-radius: 12px; white-space: normal; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="brand">
+            <img src="logo.png" alt="Logo" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2280%22>🏐</text></svg>'">
+            <div>
+                <h1>Autorização de Torneios</h1>
+                <span>Portal dos Encarregados de Educação</span>
+            </div>
+        </div>
+        <a href="lista.html" class="btn-lista-publica">📋 Ver Lista de Confirmados</a>
+    </header>
+
+    <div class="container">
+        <div class="card">
+            <h2>1. Identifique o(a) Atleta</h2>
+            <p class="sub">Selecione o escalão e o nome do seu educando para gerir a presença nos próximos torneios.</p>
+
+            <div class="escalao-selector">
+                <button type="button" class="esc-btn active" id="btn-esc-a" onclick="selecionarEscalao('Minis A')">Minis A</button>
+                <button type="button" class="esc-btn" id="btn-esc-b" onclick="selecionarEscalao('Minis B')">Minis B</button>
+            </div>
+
+            <div class="form-group">
+                <label for="select-atleta">Nome do(a) Atleta</label>
+                <select id="select-atleta" onchange="selecionarAtleta()">
+                    <option value="">A carregar lista de atletas...</option>
+                </select>
+            </div>
+
+            <div id="area-pin" class="pin-box" style="display:none;">
+                <label for="input-pin">🔒 Ano de Nascimento do(a) Atleta (4 dígitos):</label>
+                <input type="number" inputmode="numeric" pattern="[0-9]*" id="input-pin" placeholder="Ex: 2016" min="2005" max="2025">
+                <small style="display:block; color:var(--mid-gray); font-size:0.78rem; margin-top:5px;">
+                    Confirmação simples de segurança para validar a resposta do atleta selecionado.
+                </small>
+            </div>
+        </div>
+
+        <div id="area-torneios" style="display:none;">
+            <div class="card">
+                <h2>2. Torneios Convocados</h2>
+                <p class="sub">Pode autorizar ou recusar cada data individualmente.</p>
+                <div id="lista-torneios-atleta"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import {
+            getFirestore, collection, doc, onSnapshot, query, orderBy, setDoc
+        } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDHrazgKg6ezFPMyclQyc8keXXGV6QGG38",
+            authDomain: "inscricoesminis.firebaseapp.com",
+            projectId: "inscricoesminis",
+            storageBucket: "inscricoesminis.firebasestorage.app",
+            messagingSenderId: "1005618476458",
+            appId: "1:1005618476458:web:0675310fae2bfd989ae7d3",
+            measurementId: "G-6QYJ3MC92P"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        let atletas = [];
+        let torneios = [];
+        let inscricoes = [];
+        let escalaoAtual = "Minis A";
+
+        window.mostrarToast = (msg) => {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.style.display = 'block';
+            setTimeout(() => t.style.display = 'none', 3200);
+        };
+
+        onSnapshot(query(collection(db, "atletas"), orderBy("nome")), (snap) => {
+            atletas = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            atualizarDropdownAtletas();
+        });
+
+        onSnapshot(query(collection(db, "torneios"), orderBy("data")), (snap) => {
+            torneios = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            renderizarTorneiosDoAtleta();
+        });
+
+        onSnapshot(collection(db, "inscricoes"), (snap) => {
+            inscricoes = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            renderizarTorneiosDoAtleta();
+        });
+
+        window.selecionarEscalao = (esc) => {
+            escalaoAtual = esc;
+            document.getElementById('btn-esc-a').classList.toggle('active', esc === 'Minis A');
+            document.getElementById('btn-esc-b').classList.toggle('active', esc === 'Minis B');
+            document.getElementById('input-pin').value = "";
+            atualizarDropdownAtletas();
+            renderizarTorneiosDoAtleta();
+        };
+
+        function atualizarDropdownAtletas() {
+            const sel = document.getElementById('select-atleta');
+            const valorAnterior = sel.value;
+            const filtrados = atletas.filter(a => (a.escalao || "").trim() === escalaoAtual);
+
+            if (filtrados.length === 0) {
+                sel.innerHTML = `<option value="">Nenhum atleta registado em ${escalaoAtual}</option>`;
+                document.getElementById('area-pin').style.display = 'none';
+                document.getElementById('area-torneios').style.display = 'none';
+                return;
+            }
+
+            sel.innerHTML = `<option value="">-- Escolha o nome do(a) atleta --</option>` +
+                filtrados.map(a => `<option value="${a.id}">${a.nome}</option>`).join('');
+
+            if (valorAnterior && filtrados.some(a => a.id === valorAnterior)) {
+                sel.value = valorAnterior;
+            }
+        }
+
+        window.selecionarAtleta = () => {
+            const atletaId = document.getElementById('select-atleta').value;
+            document.getElementById('input-pin').value = "";
+            if (!atletaId) {
+                document.getElementById('area-pin').style.display = 'none';
+                document.getElementById('area-torneios').style.display = 'none';
+                return;
+            }
+            document.getElementById('area-pin').style.display = 'block';
+            document.getElementById('area-torneios').style.display = 'block';
+            renderizarTorneiosDoAtleta();
+        };
+
+        window.renderizarTorneiosDoAtleta = () => {
+            const atletaId = document.getElementById('select-atleta').value;
+            const container = document.getElementById('lista-torneios-atleta');
+            if (!atletaId) return;
+
+            const minhasInscricoes = inscricoes.filter(i => i.atletaId === atletaId);
+            const torneiosConvocados = torneios.filter(t => minhasInscricoes.some(i => i.torneioId === t.id));
+
+            if (torneiosConvocados.length === 0) {
+                container.innerHTML = `<div class="empty-state">Este atleta ainda não tem convocatórias abertas de momento.</div>`;
+                return;
+            }
+
+            container.innerHTML = torneiosConvocados.map(t => {
+                const insc = minhasInscricoes.find(i => i.torneioId === t.id);
+                const status = insc ? insc.status : 'pendente';
+
+                let badgeTexto = "⏳ Aguardando Resposta";
+                if (status === 'autorizado') badgeTexto = "✅ Participação Autorizada";
+                if (status === 'recusado') badgeTexto = "❌ Não Vai Participar";
+
+                return `
+                    <div class="torneio-card ${status}">
+                        <div class="t-header">
+                            <div class="t-title">${t.nome}</div>
+                            <span class="badge badge-${status}">${badgeTexto}</span>
+                        </div>
+                        <div class="t-meta">
+                            <span>📅 <strong>Data do Torneio:</strong> ${formatarData(t.data)}</span>
+                            <span>⏳ <strong>Confirmar até:</strong> ${formatarData(t.dataLimite)}</span>
+                            <span>📍 <strong>Local:</strong> ${t.pavilhao}</span>
+                        </div>
+                        <div class="actions">
+                            <button type="button" class="btn-action btn-aceitar" onclick="responderConvocatoria('${t.id}', '${atletaId}', 'autorizado')">
+                                ✅ Autorizar
+                            </button>
+                            <button type="button" class="btn-action btn-recusar" onclick="responderConvocatoria('${t.id}', '${atletaId}', 'recusado')">
+                                ❌ Recusar
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        };
+
+        window.responderConvocatoria = async (torneioId, atletaId, novoStatus) => {
+            const atleta = atletas.find(a => a.id === atletaId);
+            const torneio = torneios.find(t => t.id === torneioId);
+            if (!atleta || !torneio) return;
+
+            const anoDigitado = document.getElementById('input-pin').value.trim();
+            const anoReal = String(atleta.nascimento || "").slice(0, 4);
+
+            if (anoDigitado.length !== 4 || anoDigitado !== anoReal) {
+                alert("Por favor, introduza corretamente o Ano de Nascimento (4 dígitos) do(a) atleta no campo acima antes de confirmar.");
+                document.getElementById('input-pin').focus();
+                return;
+            }
+
+            const acaoTexto = novoStatus === 'autorizado' ? "AUTORIZAR a participação" : "RECUSAR a participação";
+            const confirmou = confirm(`Confirma que pretende ${acaoTexto} de:\n\nAtleta: ${atleta.nome}\nTorneio: ${torneio.nome} (${formatarData(torneio.data)})?`);
+            if (!confirmou) return;
+
+            const docId = `${torneioId}_${atletaId}`;
+            try {
+                await setDoc(doc(db, "inscricoes", docId), {
+                    torneioId,
+                    atletaId,
+                    status: novoStatus,
+                    atualizadoEm: new Date().toISOString()
+                });
+                mostrarToast(novoStatus === 'autorizado' ? "✅ Autorização registada com sucesso!" : "❌ Recusa registada.");
+            } catch (err) {
+                alert("Erro ao registar resposta: " + err.message);
+            }
+        };
+
+        function formatarData(iso) {
+            if (!iso) return "-";
+            const [y, m, d] = iso.split('-');
+            return `${d}/${m}/${y}`;
+        }
+    </script>
+</body>
+</html>
