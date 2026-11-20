@@ -1,0 +1,1414 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestão Mini-Voleibol | Administração</title>
+    <style>
+        :root {
+            --black: #0a0a0a;
+            --dark-gray: #1f2937;
+            --mid-gray: #4b5563;
+            --light-gray: #9ca3af;
+            --bg: #f4f4f5;
+            --card: #ffffff;
+            --text: #111827;
+            --border: #d4d4d8;
+            --success: #16a34a;
+            --warning: #d97706;
+            --danger: #dc2626;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
+        body { background: var(--bg); color: var(--text); line-height: 1.5; -webkit-tap-highlight-color: transparent; }
+
+        /* Tela de Bloqueio */
+        #login-overlay {
+            position: fixed; inset: 0; background: var(--black);
+            display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 16px;
+        }
+        .login-box {
+            background: var(--card); padding: 28px 22px; border-radius: 16px; width: 100%; max-width: 380px;
+            text-align: center; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5); border: 1px solid var(--dark-gray);
+        }
+        .login-box img { max-height: 75px; margin-bottom: 16px; object-fit: contain; }
+        .login-box h2 { margin-bottom: 6px; font-size: 1.25rem; color: var(--black); }
+        .login-box p { color: var(--mid-gray); font-size: 0.9rem; margin-bottom: 20px; }
+
+        /* Header */
+        header {
+            background: var(--black); color: white; padding: 16px 24px;
+            display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px;
+            border-bottom: 3px solid var(--dark-gray);
+        }
+        .brand { display: flex; align-items: center; gap: 12px; }
+        .brand img {
+            height: 50px; width: 50px; object-fit: contain; background: white;
+            border-radius: 10px; padding: 4px; flex-shrink: 0;
+        }
+        .brand h1 { font-size: 1.18rem; font-weight: 700; letter-spacing: -0.3px; }
+        .brand span { font-size: 0.84rem; color: var(--light-gray); display: block; }
+
+        .nav-links { display: flex; gap: 8px; flex-wrap: wrap; }
+        .nav-links a {
+            color: #f4f4f5; text-decoration: none; font-size: 0.85rem; padding: 8px 14px;
+            border-radius: 8px; border: 1px solid #3f3f46; background: #18181b; transition: 0.2s; font-weight: 600;
+            text-align: center;
+        }
+        .nav-links a:hover { background: white; color: var(--black); border-color: white; }
+
+        /* Container & Tabs */
+        .container { max-width: 1240px; margin: 20px auto; padding: 0 16px; }
+        .tabs { display: flex; gap: 8px; margin-bottom: 20px; border-bottom: 2px solid var(--border); padding-bottom: 10px; }
+        .tab-btn {
+            background: transparent; border: 1px solid transparent; padding: 10px 18px; font-size: 0.95rem;
+            font-weight: 600; color: var(--mid-gray); cursor: pointer; border-radius: 8px; transition: 0.2s;
+        }
+        .tab-btn:hover { background: #e4e4e7; color: var(--black); }
+        .tab-btn.active { background: var(--black); color: white; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        /* Grid & Cards */
+        .grid-2 { display: grid; grid-template-columns: 350px 1fr; gap: 20px; align-items: start; }
+
+        .card {
+            background: var(--card); border-radius: 12px; padding: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06); border: 1px solid var(--border);
+            min-width: 0;
+        }
+        .card h2 {
+            font-size: 1.08rem; margin-bottom: 16px; display: flex; align-items: center;
+            justify-content: space-between; color: var(--black); border-bottom: 1px solid #f4f4f5; padding-bottom: 10px;
+            flex-wrap: wrap; gap: 8px;
+        }
+
+        /* Formulários */
+        .form-group { margin-bottom: 14px; }
+        label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 5px; color: var(--dark-gray); }
+        input, select {
+            width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px;
+            font-size: 0.95rem; background: #fff; color: var(--text);
+        }
+        input:focus, select:focus { outline: none; border-color: var(--black); box-shadow: 0 0 0 3px rgba(0,0,0,0.08); }
+        .row-2 { display: grid; grid-template-columns: 110px 1fr; gap: 8px; }
+        .row-nasc { display: grid; grid-template-columns: 135px 1fr; gap: 8px; }
+        .row-equal { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+        .checkbox-inline {
+            display: inline-flex; align-items: center; gap: 6px; font-size: 0.82rem;
+            color: var(--mid-gray); font-weight: 600; cursor: pointer; user-select: none;
+        }
+        .checkbox-inline input[type="checkbox"] {
+            width: 16px; height: 16px; accent-color: var(--black); cursor: pointer;
+        }
+
+        button {
+            cursor: pointer; border: none; border-radius: 8px; font-weight: 600; font-size: 0.9rem;
+            padding: 10px 16px; transition: 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+            touch-action: manipulation;
+        }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-primary { background: var(--black); color: white; width: 100%; }
+        .btn-primary:hover:not(:disabled) { background: var(--dark-gray); }
+        .btn-secondary { background: #e4e4e7; color: var(--black); border: 1px solid #d4d4d8; }
+        .btn-secondary:hover:not(:disabled) { background: #d4d4d8; }
+        .btn-dark-outline { background: white; color: var(--black); border: 1px solid var(--black); }
+        .btn-dark-outline:hover:not(:disabled) { background: var(--black); color: white; }
+        .btn-danger { background: #fafafa; color: var(--danger); border: 1px solid #fca5a5; padding: 6px 10px; font-size: 0.8rem; }
+        .btn-danger:hover:not(:disabled) { background: var(--danger); color: white; border-color: var(--danger); }
+        .btn-sm { padding: 7px 11px; font-size: 0.82rem; }
+
+        /* Resumo de Polos, Escalões e Género (7 cards responsivos) */
+        .stats-grid-7 {
+            display: grid; grid-template-columns: repeat(7, 1fr); gap: 7px; margin-bottom: 16px;
+        }
+
+        .stat-box {
+            background: #fafafa; border: 1px solid var(--border); border-radius: 10px;
+            padding: 9px 6px; text-align: center;
+        }
+        .stat-box.highlight { background: var(--black); border-color: var(--black); }
+        .stat-box.highlight strong { color: white; }
+        .stat-box.highlight span { color: #d4d4d8; }
+        .stat-box strong { display: block; font-size: 1.2rem; color: var(--black); line-height: 1.2; }
+        .stat-box span { font-size: 0.68rem; color: var(--mid-gray); font-weight: 700; text-transform: uppercase; letter-spacing: 0.2px; }
+
+        /* Alerta de Duplicidade */
+        .dup-alert {
+            background: #fef3c7; border: 1px solid #f59e0b; color: #92400e;
+            padding: 12px 14px; border-radius: 10px; margin-bottom: 14px; font-size: 0.85rem;
+            display: none; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+        }
+
+        /* Tabelas e Badges */
+        .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+        th, td { text-align: left; padding: 11px 8px; border-bottom: 1px solid var(--border); }
+        th { background: #fafafa; font-weight: 700; color: var(--dark-gray); font-size: 0.75rem; text-transform: uppercase; white-space: nowrap; }
+        tr.row-dup { background: #fffbeb; }
+        .actions-cell { white-space: nowrap; display: flex; gap: 5px; }
+        
+        .badge {
+            padding: 3px 9px; border-radius: 999px; font-size: 0.73rem; font-weight: 700; display: inline-block; white-space: nowrap;
+        }
+        .badge-a { background: var(--black); color: white; }
+        .badge-b { background: #e4e4e7; color: var(--black); border: 1px solid #a1a1aa; }
+        .badge-polo { background: #f4f4f5; color: var(--dark-gray); border: 1px solid #d4d4d8; font-weight: 600; }
+        .badge-fem { background: #fce7f3; color: #9d174d; border: 1px solid #f9a8d4; }
+        .badge-masc { background: #e0f2fe; color: #075985; border: 1px solid #7dd3fc; }
+        .badge-nd { background: #f4f4f5; color: #71717a; border: 1px solid #e4e4e7; }
+        .badge-dup { background: #fef3c7; color: #b45309; border: 1px solid #f59e0b; margin-left: 6px; }
+        .status-pendente { background: #fef3c7; color: #92400e; }
+        .status-autorizado { background: #dcfce7; color: #166534; }
+        .status-recusado { background: #fee2e2; color: #991b1b; }
+
+        /* Lista de Convocatória */
+        .convocatoria-item {
+            display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;
+            padding: 12px 14px; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 8px; background: #fafafa;
+        }
+        .convocatoria-info strong { font-size: 0.95rem; color: var(--black); }
+        .convocatoria-info small { display: block; color: var(--mid-gray); margin-top: 2px; }
+        .status-actions { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+
+        .conv-filters-group { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+        .conv-filters-group select { width: auto; padding: 6px 10px; font-size: 0.82rem; }
+
+        .filter-bar { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+        .filter-bar input, .filter-bar select { width: auto; flex: 1; min-width: 130px; }
+
+        .torneio-banner {
+            display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px;
+            background: #fafafa; padding: 14px; border-radius: 10px; margin-bottom: 16px; border: 1px solid var(--border);
+        }
+        .torneio-btn-group { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; width: 100%; }
+
+        .toast {
+            position: fixed; bottom: 20px; right: 20px; background: var(--black); color: white;
+            padding: 12px 20px; border-radius: 8px; box-shadow: 0 10px 15px rgba(0,0,0,0.3);
+            display: none; z-index: 2000; font-size: 0.9rem; border: 1px solid var(--dark-gray);
+        }
+
+        /* ================= RESPONSIVIDADE MOBILE / TABLET ================= */
+        @media (max-width: 1100px) {
+            .stats-grid-7 { grid-template-columns: repeat(4, 1fr); }
+        }
+
+        @media (max-width: 960px) {
+            .grid-2 { grid-template-columns: 1fr; }
+        }
+
+        @media (max-width: 640px) {
+            header { padding: 14px 16px; flex-direction: column; align-items: stretch; }
+            .brand img { height: 44px; width: 44px; }
+            .brand h1 { font-size: 1.08rem; }
+            .nav-links { display: grid; grid-template-columns: 1fr 1fr; width: 100%; }
+            .nav-links a { padding: 9px 10px; font-size: 0.82rem; }
+
+            .container { margin: 14px auto; padding: 0 12px; }
+            .tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+            .tab-btn { padding: 10px 8px; font-size: 0.86rem; text-align: center; }
+
+            .card { padding: 16px 14px; }
+
+            /* Evita zoom automático no iOS ao focar inputs */
+            input:not([type="checkbox"]), select { font-size: 16px; padding: 10px 12px; }
+            .row-equal, .row-nasc { grid-template-columns: 1fr; }
+            .row-2 { grid-template-columns: 105px 1fr; }
+
+            .stats-grid-7 { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+            .stats-grid-7 .stat-box.highlight { grid-column: span 2; }
+
+            .filter-bar { flex-direction: column; }
+            .filter-bar input, .filter-bar select { width: 100%; min-width: 100%; }
+
+            .torneio-btn-group { display: grid; grid-template-columns: 1fr 1fr; }
+            .torneio-btn-group .btn-danger { grid-column: span 2; margin-left: 0 !important; }
+
+            .convocatoria-item { flex-direction: column; align-items: stretch; gap: 10px; }
+            .status-actions { justify-content: space-between; border-top: 1px solid #e4e4e7; padding-top: 8px; }
+            .status-actions .btn-sm { padding: 8px 12px; }
+
+            .conv-filters-group { width: 100%; flex-direction: column; }
+            .conv-filters-group select { width: 100% !important; font-size: 16px; padding: 9px 10px; }
+
+            .toast { left: 16px; right: 16px; bottom: 16px; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Tela de Login Simples -->
+    <div id="login-overlay">
+        <div class="login-box">
+            <img src="logo.png" alt="Logo do Clube" onerror="this.style.display='none'">
+            <h2>Gestão Mini-Voleibol</h2>
+            <p>Área reservada à equipa técnica</p>
+            <div class="form-group">
+                <input type="password" id="admin-pass" placeholder="Senha de acesso..." onkeypress="if(event.key==='Enter') verificarSenha()">
+            </div>
+            <button class="btn-primary" onclick="verificarSenha()">Entrar na Gestão</button>
+        </div>
+    </div>
+
+    <header>
+        <div class="brand">
+            <img src="logo.png" alt="Logo" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2280%22>🏐</text></svg>'">
+            <div>
+                <h1>Gestão Mini-Voleibol</h1>
+                <span>Minis A & Minis B • Época 2026/27</span>
+            </div>
+        </div>
+        <div class="nav-links">
+            <a href="pais.html" target="_blank">🔗 Página dos Pais</a>
+            <a href="lista.html" target="_blank">📋 Lista Pública</a>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="tabs">
+            <button class="tab-btn active" onclick="mudarAba('convocatorias', this)">🏆 Torneios & Convocatórias</button>
+            <button class="tab-btn" onclick="mudarAba('atletas', this)">👟 Base de Atletas</button>
+        </div>
+
+        <!-- ABA 1: TORNEIOS E CONVOCATÓRIAS -->
+        <div id="tab-convocatorias" class="tab-content active">
+            <div class="grid-2">
+                <!-- Coluna Esquerda: Cadastro / Edição de Torneio -->
+                <div class="card">
+                    <h2>
+                        <span id="form-torneio-titulo">Novo Torneio</span>
+                        <button type="button" class="btn-secondary btn-sm" onclick="importarCalendarioAVB()" title="Carregar todas as datas da tabela AVB">📥 Importar AVB</button>
+                    </h2>
+                    <form id="form-torneio">
+                        <input type="hidden" id="t-id">
+                        <div class="form-group">
+                            <label>Escalão</label>
+                            <select id="t-escalao" required>
+                                <option value="Minis A">Minis A</option>
+                                <option value="Minis B">Minis B</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Nome da Competição</label>
+                            <input type="text" id="t-nome" placeholder="Ex: II Torneio Clínica Dentária S. Dâmaso" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Data do Torneio</label>
+                            <input type="date" id="t-data" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Data Limite Inscrição</label>
+                            <input type="date" id="t-limite">
+                        </div>
+                        <div class="form-group">
+                            <label>Pavilhão / Local</label>
+                            <input type="text" id="t-pavilhao" placeholder="Ex: Municipal de Adães">
+                        </div>
+                        <div style="display:flex; gap:8px;">
+                            <button type="submit" class="btn-primary" id="btn-salvar-torneio">Guardar Torneio</button>
+                            <button type="button" class="btn-secondary" id="btn-cancelar-torneio" style="display:none;" onclick="limparFormTorneio()">Cancelar</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Coluna Direita: Seleção de Torneio e Convocatória -->
+                <div class="card">
+                    <h2>Convocatória & Autorizações</h2>
+                    <div class="form-group">
+                        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px; margin-bottom:5px;">
+                            <label style="margin-bottom:0;">Selecione o Torneio (Próximos em destaque):</label>
+                            <label class="checkbox-inline" title="Exibir também campeonatos realizados há mais de 3 dias">
+                                <input type="checkbox" id="mostrar-torneios-passados" onchange="atualizarSelectTorneios(); renderizarConvocatoria();">
+                                Mostrar passados (+3 dias)
+                            </label>
+                        </div>
+                        <select id="select-torneio-ativo" onchange="renderizarConvocatoria()">
+                            <option value="">A carregar torneios...</option>
+                        </select>
+                    </div>
+
+                    <div id="painel-torneio-detalhes" style="display:none;">
+                        <div class="torneio-banner">
+                            <div style="width:100%; display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:8px;">
+                                <div>
+                                    <strong id="info-t-titulo" style="font-size:1rem; color:var(--black);"></strong>
+                                    <div id="info-t-sub" style="font-size:0.85rem; color:var(--mid-gray); margin-top:2px;"></div>
+                                </div>
+                                <div style="display:flex; gap:6px;">
+                                    <button type="button" class="btn-secondary btn-sm" onclick="editarTorneioAtual()">✏️ Editar</button>
+                                    <button type="button" class="btn-danger" onclick="excluirTorneioAtual()">🗑️ Excluir Torneio</button>
+                                </div>
+                            </div>
+
+                            <div class="torneio-btn-group">
+                                <button type="button" class="btn-dark-outline btn-sm" onclick="convocarPorFiltro('Minis A', this)">+ Convocar Minis A</button>
+                                <button type="button" class="btn-dark-outline btn-sm" onclick="convocarPorFiltro('Minis B', this)">+ Convocar Minis B</button>
+                                <button type="button" class="btn-secondary btn-sm" onclick="convocarPorFiltro('TODOS', this)">+ Convocar Todos</button>
+                                <button type="button" class="btn-danger" style="margin-left:auto;" onclick="desconvocarTodosDoTorneio(this)">Desconvocar Todos</button>
+                            </div>
+                        </div>
+
+                        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:14px;">
+                            <div style="display:flex; gap:14px; font-size:0.85rem; font-weight:600; flex-wrap:wrap;">
+                                <span style="color:var(--success);">✅ Autorizados: <b id="count-aut">0</b></span>
+                                <span style="color:var(--warning);">⏳ Pendentes: <b id="count-pen">0</b></span>
+                                <span style="color:var(--danger);">❌ Recusados: <b id="count-rec">0</b></span>
+                            </div>
+                            <div class="conv-filters-group">
+                                <select id="filtro-conv-escalao" onchange="renderizarConvocatoria()">
+                                    <option value="DO_TORNEIO">Escalão do Torneio</option>
+                                    <option value="TODOS">Todos os Escalões</option>
+                                    <option value="Minis A">Apenas Minis A</option>
+                                    <option value="Minis B">Apenas Minis B</option>
+                                </select>
+                                <select id="filtro-conv-status" onchange="renderizarConvocatoria()">
+                                    <option value="TODOS">Todos os Estados</option>
+                                    <option value="autorizado">✅ Autorizados</option>
+                                    <option value="pendente">⏳ Pendentes</option>
+                                    <option value="recusado">❌ Recusados</option>
+                                    <option value="nao_convocado">Não Convocados</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div id="lista-convocatoria"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ABA 2: BASE DE ATLETAS -->
+        <div id="tab-atletas" class="tab-content">
+            <div class="grid-2">
+                <!-- Formulário de Atleta -->
+                <div class="card">
+                    <h2 id="form-atleta-titulo">Cadastrar Atleta</h2>
+                    <form id="form-atleta">
+                        <input type="hidden" id="a-id">
+                        <div class="form-group">
+                            <label>Nome Completo do Atleta</label>
+                            <input type="text" id="a-nome" placeholder="Ex: Maria Clara Silva" required>
+                        </div>
+                        <div class="row-equal">
+                            <div class="form-group">
+                                <label>Género</label>
+                                <select id="a-genero" required>
+                                    <option value="Feminino">Feminino</option>
+                                    <option value="Masculino">Masculino</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Escalão</label>
+                                <select id="a-escalao" required>
+                                    <option value="Minis A">Minis A</option>
+                                    <option value="Minis B">Minis B</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Nascimento</label>
+                            <div class="row-nasc">
+                                <select id="a-nasc-modo" onchange="alternarModoNascimento()">
+                                    <option value="ano">Apenas Ano</option>
+                                    <option value="data">Data Completa</option>
+                                </select>
+                                <input type="number" id="a-ano" placeholder="Ex: 2016" min="2005" max="2025" required>
+                                <input type="date" id="a-nascimento" style="display:none;">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Polo de Treino</label>
+                            <select id="a-polo" required>
+                                <option value="Polo de Manhente">Polo de Manhente</option>
+                                <option value="Polo Barcelos">Polo Barcelos</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Documento de Identificação <span style="font-weight:400; color:var(--mid-gray);">(Opcional)</span></label>
+                            <div class="row-2">
+                                <select id="a-doc-tipo">
+                                    <option value="CC">CC</option>
+                                    <option value="TR">TR</option>
+                                    <option value="Passaporte">Passaporte</option>
+                                </select>
+                                <input type="text" id="a-doc-num" placeholder="Número (se tiver)">
+                            </div>
+                        </div>
+                        <div style="display:flex; gap:8px;">
+                            <button type="submit" class="btn-primary" id="btn-salvar-atleta">Guardar Atleta</button>
+                            <button type="button" class="btn-secondary" id="btn-cancelar-edicao" style="display:none;" onclick="limparFormAtleta()">Cancelar</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Lista de Atletas -->
+                <div class="card">
+                    <h2>
+                        <span>Atletas Registados (<span id="total-atletas">0</span>)</span>
+                        <button type="button" class="btn-dark-outline btn-sm" onclick="imprimirRelatorioAtletas()">🖨️ Imprimir / PDF</button>
+                    </h2>
+
+                    <!-- Alerta automático de duplicidades -->
+                    <div id="alerta-duplicados" class="dup-alert">
+                        <div>⚠️ <strong>Atenção:</strong> Foram detetados <span id="qtd-duplicados">0</span> registo(s) com nome ou documento duplicado!</div>
+                        <button type="button" class="btn-sm" style="background:#f59e0b; color:white;" onclick="filtrarApenasDuplicados()">Ver Duplicados</button>
+                    </div>
+
+                    <!-- Contadores por Escalão, Género e Polo -->
+                    <div class="stats-grid-7">
+                        <div class="stat-box highlight">
+                            <strong id="stat-total">0</strong>
+                            <span>Total</span>
+                        </div>
+                        <div class="stat-box">
+                            <strong id="stat-minis-a">0</strong>
+                            <span>Minis A</span>
+                        </div>
+                        <div class="stat-box">
+                            <strong id="stat-minis-b">0</strong>
+                            <span>Minis B</span>
+                        </div>
+                        <div class="stat-box">
+                            <strong id="stat-fem">0</strong>
+                            <span>Feminino</span>
+                        </div>
+                        <div class="stat-box">
+                            <strong id="stat-masc">0</strong>
+                            <span>Masculino</span>
+                        </div>
+                        <div class="stat-box">
+                            <strong id="stat-manhente">0</strong>
+                            <span>Manhente</span>
+                        </div>
+                        <div class="stat-box">
+                            <strong id="stat-barcelos">0</strong>
+                            <span>Barcelos</span>
+                        </div>
+                    </div>
+
+                    <div class="filter-bar">
+                        <input type="text" id="busca-atleta" placeholder="Pesquisar nome, ano ou doc..." oninput="desativarFiltroDup(); renderizarAtletas()">
+                        <select id="filtro-escalao-atleta" onchange="desativarFiltroDup(); renderizarAtletas()">
+                            <option value="TODOS">Todos Escalões</option>
+                            <option value="Minis A">Minis A</option>
+                            <option value="Minis B">Minis B</option>
+                        </select>
+                        <select id="filtro-genero-atleta" onchange="desativarFiltroDup(); renderizarAtletas()">
+                            <option value="TODOS">Todos Géneros</option>
+                            <option value="Feminino">Feminino</option>
+                            <option value="Masculino">Masculino</option>
+                            <option value="NAO_DEFINIDO">Sem Género</option>
+                        </select>
+                        <select id="filtro-polo-atleta" onchange="desativarFiltroDup(); renderizarAtletas()">
+                            <option value="TODOS">Todos os Polos</option>
+                            <option value="Polo de Manhente">Polo de Manhente</option>
+                            <option value="Polo Barcelos">Polo Barcelos</option>
+                        </select>
+                    </div>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Nome</th>
+                                    <th>Género</th>
+                                    <th>Escalão</th>
+                                    <th>Polo</th>
+                                    <th>Nasc.</th>
+                                    <th>Documento</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabela-atletas"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import {
+            getFirestore, collection, addDoc, updateDoc, deleteDoc, doc,
+            onSnapshot, query, orderBy, setDoc, writeBatch
+        } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDHrazgKg6ezFPMyclQyc8keXXGV6QGG38",
+            authDomain: "inscricoesminis.firebaseapp.com",
+            projectId: "inscricoesminis",
+            storageBucket: "inscricoesminis.firebasestorage.app",
+            messagingSenderId: "1005618476458",
+            appId: "1:1005618476458:web:0675310fae2bfd989ae7d3",
+            measurementId: "G-6QYJ3MC92P"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        let atletas = [];
+        let torneios = [];
+        let inscricoes = [];
+        let apenasDuplicados = false;
+
+        function normalizarPolo(polo) {
+            if (!polo) return "Não definido";
+            if (polo === "Polo Gonçalo Nunes" || polo === "Polo Barcelos") return "Polo Barcelos";
+            return polo;
+        }
+
+        const SENHA_ADMIN = "minis2026";
+        window.verificarSenha = () => {
+            const val = document.getElementById('admin-pass').value;
+            if (val === SENHA_ADMIN) {
+                sessionStorage.setItem('minis_admin', 'ok');
+                document.getElementById('login-overlay').style.display = 'none';
+            } else {
+                alert("Senha incorreta!");
+            }
+        };
+        if (sessionStorage.getItem('minis_admin') === 'ok') {
+            document.getElementById('login-overlay').style.display = 'none';
+        }
+
+        window.mostrarToast = (msg) => {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.style.display = 'block';
+            setTimeout(() => t.style.display = 'none', 3200);
+        };
+
+        window.mudarAba = (aba, btn) => {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById('tab-' + aba).classList.add('active');
+            btn.classList.add('active');
+        };
+
+        window.alternarModoNascimento = () => {
+            const modo = document.getElementById('a-nasc-modo').value;
+            const inputAno = document.getElementById('a-ano');
+            const inputData = document.getElementById('a-nascimento');
+
+            if (modo === 'ano') {
+                inputAno.style.display = 'block';
+                inputAno.required = true;
+                inputData.style.display = 'none';
+                inputData.required = false;
+            } else {
+                inputAno.style.display = 'none';
+                inputAno.required = false;
+                inputData.style.display = 'block';
+                inputData.required = true;
+            }
+        };
+
+        function normalizarTexto(str) {
+            return String(str || "")
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "")
+                .replace(/\s+/g, " ")
+                .trim()
+                .toLowerCase();
+        }
+
+        function obterIdsDuplicados() {
+            const mapaNomes = {};
+            const mapaDocs = {};
+            const idsDup = new Set();
+
+            atletas.forEach(a => {
+                const n = normalizarTexto(a.nome);
+                if (n) {
+                    if (!mapaNomes[n]) mapaNomes[n] = [];
+                    mapaNomes[n].push(a.id);
+                }
+                const d = normalizarTexto(a.docNum).replace(/\s/g, "");
+                if (d) {
+                    if (!mapaDocs[d]) mapaDocs[d] = [];
+                    mapaDocs[d].push(a.id);
+                }
+            });
+
+            Object.values(mapaNomes).forEach(lista => {
+                if (lista.length > 1) lista.forEach(id => idsDup.add(id));
+            });
+            Object.values(mapaDocs).forEach(lista => {
+                if (lista.length > 1) lista.forEach(id => idsDup.add(id));
+            });
+
+            return idsDup;
+        }
+
+        window.filtrarApenasDuplicados = () => {
+            apenasDuplicados = !apenasDuplicados;
+            renderizarAtletas();
+        };
+
+        window.desativarFiltroDup = () => {
+            apenasDuplicados = false;
+        };
+
+        onSnapshot(query(collection(db, "atletas"), orderBy("nome")), (snap) => {
+            atletas = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            renderizarAtletas();
+            renderizarConvocatoria();
+        });
+
+        onSnapshot(query(collection(db, "torneios"), orderBy("data")), (snap) => {
+            torneios = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            atualizarSelectTorneios();
+            renderizarConvocatoria();
+        });
+
+        onSnapshot(collection(db, "inscricoes"), (snap) => {
+            inscricoes = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            renderizarConvocatoria();
+        });
+
+        // ================= GESTÃO DE ATLETAS =================
+        document.getElementById('form-atleta').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('a-id').value;
+            const modo = document.getElementById('a-nasc-modo').value;
+            const valorNascimento = modo === 'ano'
+                ? document.getElementById('a-ano').value.trim()
+                : document.getElementById('a-nascimento').value;
+
+            const nomeDigitado = document.getElementById('a-nome').value.trim();
+            const docNum = document.getElementById('a-doc-num').value.trim().toUpperCase();
+
+            const nomeNorm = normalizarTexto(nomeDigitado);
+            const docNorm = normalizarTexto(docNum).replace(/\s/g, "");
+
+            const duplicadoNome = atletas.find(a => a.id !== id && normalizarTexto(a.nome) === nomeNorm);
+            if (duplicadoNome) {
+                alert(`⚠️ Registo Duplicado!\n\nJá existe um atleta cadastrado com o nome "${duplicadoNome.nome}" (${duplicadoNome.escalao} • ${normalizarPolo(duplicadoNome.polo)}).`);
+                return;
+            }
+
+            if (docNorm) {
+                const duplicadoDoc = atletas.find(a => a.id !== id && normalizarTexto(a.docNum).replace(/\s/g, "") === docNorm);
+                if (duplicadoDoc) {
+                    alert(`⚠️ Documento Duplicado!\n\nO documento "${docNum}" já está associado ao atleta "${duplicadoDoc.nome}".`);
+                    return;
+                }
+            }
+
+            const dados = {
+                nome: nomeDigitado,
+                genero: document.getElementById('a-genero').value,
+                nascimento: valorNascimento,
+                escalao: document.getElementById('a-escalao').value,
+                polo: document.getElementById('a-polo').value,
+                docTipo: docNum ? document.getElementById('a-doc-tipo').value : "",
+                docNum: docNum
+            };
+
+            try {
+                if (id) {
+                    await updateDoc(doc(db, "atletas", id), dados);
+                    mostrarToast("Atleta atualizado com sucesso!");
+                } else {
+                    await addDoc(collection(db, "atletas"), dados);
+                    mostrarToast("Atleta cadastrado!");
+                }
+                limparFormAtleta();
+            } catch (err) {
+                alert("Erro ao guardar atleta: " + err.message);
+            }
+        });
+
+        window.editarAtleta = (id) => {
+            const a = atletas.find(x => x.id === id);
+            if (!a) return;
+            document.getElementById('a-id').value = a.id;
+            document.getElementById('a-nome').value = a.nome;
+            document.getElementById('a-genero').value = a.genero || "Feminino";
+
+            const nascStr = String(a.nascimento || "");
+            if (nascStr.length === 4) {
+                document.getElementById('a-nasc-modo').value = 'ano';
+                alternarModoNascimento();
+                document.getElementById('a-ano').value = nascStr;
+                document.getElementById('a-nascimento').value = "";
+            } else {
+                document.getElementById('a-nasc-modo').value = 'data';
+                alternarModoNascimento();
+                document.getElementById('a-nascimento').value = nascStr;
+                document.getElementById('a-ano').value = "";
+            }
+
+            document.getElementById('a-escalao').value = a.escalao;
+            document.getElementById('a-polo').value = normalizarPolo(a.polo) === "Não definido" ? "Polo de Manhente" : normalizarPolo(a.polo);
+            document.getElementById('a-doc-tipo').value = a.docTipo || "CC";
+            document.getElementById('a-doc-num').value = a.docNum || "";
+            document.getElementById('form-atleta-titulo').textContent = "Editar Atleta";
+            document.getElementById('btn-salvar-atleta').textContent = "Atualizar Atleta";
+            document.getElementById('btn-cancelar-edicao').style.display = "inline-flex";
+            document.getElementById('form-atleta').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            document.getElementById('a-nome').focus();
+        };
+
+        window.limparFormAtleta = () => {
+            document.getElementById('form-atleta').reset();
+            document.getElementById('a-id').value = "";
+            document.getElementById('a-nasc-modo').value = "ano";
+            alternarModoNascimento();
+            document.getElementById('form-atleta-titulo').textContent = "Cadastrar Atleta";
+            document.getElementById('btn-salvar-atleta').textContent = "Guardar Atleta";
+            document.getElementById('btn-cancelar-edicao').style.display = "none";
+        };
+
+        window.excluirAtleta = async (id, nome) => {
+            if (!confirm(`Tem a certeza que deseja remover o atleta ${nome}?`)) return;
+            await deleteDoc(doc(db, "atletas", id));
+            mostrarToast("Atleta removido.");
+        };
+
+        function obterAtletasFiltrados() {
+            const busca = document.getElementById('busca-atleta').value.toLowerCase();
+            const filtroEsc = document.getElementById('filtro-escalao-atleta').value;
+            const filtroGen = document.getElementById('filtro-genero-atleta').value;
+            const filtroPolo = document.getElementById('filtro-polo-atleta').value;
+            const idsDup = obterIdsDuplicados();
+
+            return atletas.filter(a => {
+                if (apenasDuplicados) return idsDup.has(a.id);
+                const docStr = (a.docNum || "").toLowerCase();
+                const matchTexto = a.nome.toLowerCase().includes(busca) || docStr.includes(busca) || String(a.nascimento || "").includes(busca);
+                const matchEsc = filtroEsc === "TODOS" || (a.escalao || "").trim() === filtroEsc;
+                const matchGen = filtroGen === "TODOS"
+                    || (filtroGen === "NAO_DEFINIDO" && !a.genero)
+                    || a.genero === filtroGen;
+                const matchPolo = filtroPolo === "TODOS" || normalizarPolo(a.polo) === filtroPolo;
+                return matchTexto && matchEsc && matchGen && matchPolo;
+            });
+        }
+
+        window.renderizarAtletas = () => {
+            const tbody = document.getElementById('tabela-atletas');
+
+            document.getElementById('stat-total').textContent = atletas.length;
+            document.getElementById('stat-minis-a').textContent = atletas.filter(a => (a.escalao || "").trim() === "Minis A").length;
+            document.getElementById('stat-minis-b').textContent = atletas.filter(a => (a.escalao || "").trim() === "Minis B").length;
+            document.getElementById('stat-fem').textContent = atletas.filter(a => a.genero === "Feminino").length;
+            document.getElementById('stat-masc').textContent = atletas.filter(a => a.genero === "Masculino").length;
+            document.getElementById('stat-manhente').textContent = atletas.filter(a => normalizarPolo(a.polo) === "Polo de Manhente").length;
+            document.getElementById('stat-barcelos').textContent = atletas.filter(a => normalizarPolo(a.polo) === "Polo Barcelos").length;
+
+            const idsDup = obterIdsDuplicados();
+            const alertaDup = document.getElementById('alerta-duplicados');
+            if (idsDup.size > 0) {
+                alertaDup.style.display = 'flex';
+                document.getElementById('qtd-duplicados').textContent = idsDup.size;
+            } else {
+                alertaDup.style.display = 'none';
+                apenasDuplicados = false;
+            }
+
+            const filtrados = obterAtletasFiltrados();
+
+            document.getElementById('total-atletas').textContent = filtrados.length;
+            tbody.innerHTML = filtrados.map(a => {
+                const ehDup = idsDup.has(a.id);
+                const poloExibir = normalizarPolo(a.polo);
+                let genBadge = `<span class="badge badge-nd">—</span>`;
+                if (a.genero === "Feminino") genBadge = `<span class="badge badge-fem">Fem</span>`;
+                if (a.genero === "Masculino") genBadge = `<span class="badge badge-masc">Masc</span>`;
+
+                return `
+                <tr class="${ehDup ? 'row-dup' : ''}">
+                    <td>
+                        <strong>${a.nome}</strong>
+                        ${ehDup ? `<span class="badge badge-dup">Duplicado</span>` : ''}
+                    </td>
+                    <td>${genBadge}</td>
+                    <td><span class="badge ${a.escalao === 'Minis A' ? 'badge-a' : 'badge-b'}">${a.escalao}</span></td>
+                    <td><span class="badge badge-polo">${poloExibir}</span></td>
+                    <td>${formatarNascimento(a.nascimento)}</td>
+                    <td>${a.docNum ? `${a.docTipo}: <code>${a.docNum}</code>` : `<span style="color:var(--light-gray); font-size:0.8rem;">—</span>`}</td>
+                    <td>
+                        <div class="actions-cell">
+                            <button class="btn-secondary btn-sm" title="Editar Atleta" onclick="editarAtleta('${a.id}')">✏️</button>
+                            <button class="btn-danger" title="Excluir Atleta" onclick="excluirAtleta('${a.id}', '${a.nome.replace(/'/g, "\\'")}')">🗑️</button>
+                        </div>
+                    </td>
+                </tr>
+            `}).join('');
+        };
+
+        // ================= IMPRESSÃO / RELATÓRIO PDF =================
+        window.imprimirRelatorioAtletas = () => {
+            const lista = obterAtletasFiltrados();
+            if (lista.length === 0) {
+                alert("Não há atletas na listagem atual para imprimir.");
+                return;
+            }
+
+            const filtroEsc = document.getElementById('filtro-escalao-atleta').value;
+            const filtroGen = document.getElementById('filtro-genero-atleta').value;
+            const filtroPolo = document.getElementById('filtro-polo-atleta').value;
+
+            const criterios = [];
+            if (filtroEsc !== "TODOS") criterios.push(`Escalão: ${filtroEsc}`);
+            if (filtroGen !== "TODOS") criterios.push(`Género: ${filtroGen === "NAO_DEFINIDO" ? "Sem género" : filtroGen}`);
+            if (filtroPolo !== "TODOS") criterios.push(`Polo: ${filtroPolo}`);
+            const subtituloFiltro = criterios.length > 0 ? criterios.join(" • ") : "Base Completa de Atletas";
+
+            const totMinisA = lista.filter(a => (a.escalao || "").trim() === "Minis A").length;
+            const totMinisB = lista.filter(a => (a.escalao || "").trim() === "Minis B").length;
+            const totFem = lista.filter(a => a.genero === "Feminino").length;
+            const totMasc = lista.filter(a => a.genero === "Masculino").length;
+            const totManhente = lista.filter(a => normalizarPolo(a.polo) === "Polo de Manhente").length;
+            const totBarcelos = lista.filter(a => normalizarPolo(a.polo) === "Polo Barcelos").length;
+
+            const dataEmissao = new Date().toLocaleDateString('pt-PT', {
+                day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
+            });
+
+            const logoUrl = new URL('logo.png', window.location.href).href;
+
+            const linhasHtml = lista.map((a, idx) => `
+                <tr>
+                    <td style="text-align:center; color:#6b7280; font-weight:600;">${idx + 1}</td>
+                    <td><strong>${a.nome}</strong></td>
+                    <td>${a.genero || "—"}</td>
+                    <td><span class="pill ${a.escalao === 'Minis A' ? 'pill-dark' : 'pill-light'}">${a.escalao}</span></td>
+                    <td>${normalizarPolo(a.polo)}</td>
+                    <td>${formatarNascimento(a.nascimento)}</td>
+                    <td>${a.docNum ? `${a.docTipo}: ${a.docNum}` : "—"}</td>
+                </tr>
+            `).join('');
+
+            const janelaPrint = window.open('', '_blank', 'width=1024,height=800');
+            if (!janelaPrint) {
+                alert("Por favor, permita pop-ups no navegador para abrir a página de impressão/PDF.");
+                return;
+            }
+
+            janelaPrint.document.write(`
+                <!DOCTYPE html>
+                <html lang="pt-PT">
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>Relatório de Atletas — Mini-Voleibol</title>
+                    <style>
+                        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
+                        body { background: #e5e7eb; color: #111827; padding: 16px; }
+                        .toolbar {
+                            max-width: 920px; margin: 0 auto 16px auto; background: #111827; color: white;
+                            padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap;
+                        }
+                        .toolbar button {
+                            background: white; color: #111827; border: none; padding: 9px 18px; border-radius: 8px;
+                            font-weight: 700; cursor: pointer; font-size: 0.9rem;
+                        }
+                        .toolbar button:hover { background: #f3f4f6; }
+                        .sheet {
+                            max-width: 920px; margin: 0 auto; background: white; padding: 28px 32px;
+                            border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+                        }
+                        .report-header {
+                            display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;
+                            border-bottom: 2px solid #111827; padding-bottom: 16px; margin-bottom: 20px;
+                        }
+                        .report-brand { display: flex; align-items: center; gap: 14px; }
+                        .report-brand img { height: 52px; width: 52px; object-fit: contain; }
+                        .report-brand h1 { font-size: 1.25rem; font-weight: 800; color: #0a0a0a; letter-spacing: -0.3px; }
+                        .report-brand p { font-size: 0.85rem; color: #4b5563; margin-top: 2px; }
+                        .report-meta { text-align: right; font-size: 0.8rem; color: #4b5563; }
+                        .summary-grid {
+                            display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin-bottom: 22px;
+                        }
+                        @media (max-width: 700px) {
+                            .sheet { padding: 18px 16px; }
+                            .summary-grid { grid-template-columns: repeat(2, 1fr); }
+                            .report-meta { text-align: left; }
+                        }
+                        .sum-card {
+                            border: 1px solid #d1d5db; border-radius: 8px; padding: 8px 6px; text-align: center; background: #fafafa;
+                        }
+                        .sum-card.main { background: #111827; color: white; border-color: #111827; }
+                        .sum-card.main span { color: #d1d5db; }
+                        .sum-card strong { display: block; font-size: 1.15rem; line-height: 1.2; }
+                        .sum-card span { font-size: 0.66rem; text-transform: uppercase; font-weight: 700; color: #4b5563; }
+                        .table-scroll { overflow-x: auto; }
+                        table { width: 100%; border-collapse: collapse; font-size: 0.84rem; }
+                        th {
+                            background: #111827; color: white; text-align: left; padding: 9px 8px;
+                            font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.4px; white-space: nowrap;
+                        }
+                        td { padding: 8px; border-bottom: 1px solid #e5e7eb; }
+                        tr:nth-child(even) td { background: #f9fafb; }
+                        .pill {
+                            padding: 2px 8px; border-radius: 999px; font-size: 0.72rem; font-weight: 700; display: inline-block; white-space: nowrap;
+                        }
+                        .pill-dark { background: #111827; color: white; }
+                        .pill-light { background: #e5e7eb; color: #111827; }
+                        .footer-note {
+                            margin-top: 20px; padding-top: 12px; border-top: 1px solid #e5e7eb;
+                            display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; font-size: 0.75rem; color: #6b7280;
+                        }
+                        @media print {
+                            body { background: white; padding: 0; }
+                            .toolbar { display: none !important; }
+                            .sheet { box-shadow: none; padding: 0; max-width: 100%; border-radius: 0; }
+                            .summary-grid { grid-template-columns: repeat(7, 1fr) !important; }
+                            th { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                            .sum-card.main, .pill-dark, .pill-light, tr:nth-child(even) td {
+                                -webkit-print-color-adjust: exact; print-color-adjust: exact;
+                            }
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="toolbar">
+                        <span>Pré-visualização do Relatório (${lista.length} atletas)</span>
+                        <button onclick="window.print()">🖨️ Imprimir / Guardar PDF</button>
+                    </div>
+                    <div class="sheet">
+                        <div class="report-header">
+                            <div class="report-brand">
+                                <img src="${logoUrl}" onerror="this.style.display='none'">
+                                <div>
+                                    <h1>Registo de Atletas — Mini-Voleibol</h1>
+                                    <p>${subtituloFiltro} • Época 2026/27</p>
+                                </div>
+                            </div>
+                            <div class="report-meta">
+                                <strong>Emitido em:</strong><br>${dataEmissao}
+                            </div>
+                        </div>
+
+                        <div class="summary-grid">
+                            <div class="sum-card main"><strong>${lista.length}</strong><span>Total</span></div>
+                            <div class="sum-card"><strong>${totMinisA}</strong><span>Minis A</span></div>
+                            <div class="sum-card"><strong>${totMinisB}</strong><span>Minis B</span></div>
+                            <div class="sum-card"><strong>${totFem}</strong><span>Feminino</span></div>
+                            <div class="sum-card"><strong>${totMasc}</strong><span>Masculino</span></div>
+                            <div class="sum-card"><strong>${totManhente}</strong><span>Manhente</span></div>
+                            <div class="sum-card"><strong>${totBarcelos}</strong><span>Barcelos</span></div>
+                        </div>
+
+                        <div class="table-scroll">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th style="width:36px; text-align:center;">#</th>
+                                        <th>Nome Completo</th>
+                                        <th>Género</th>
+                                        <th>Escalão</th>
+                                        <th>Polo</th>
+                                        <th>Nascimento</th>
+                                        <th>Documento</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${linhasHtml}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="footer-note">
+                            <span>Gestão Mini-Voleibol • Documento interno da equipa técnica</span>
+                            <span>Total listado: ${lista.length} atleta(s)</span>
+                        </div>
+                    </div>
+                </body>
+                </html>
+            `);
+            janelaPrint.document.close();
+        };
+
+        // ================= GESTÃO DE TORNEIOS =================
+        document.getElementById('form-torneio').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('t-id').value;
+            const escalao = document.getElementById('t-escalao').value;
+            const nome = document.getElementById('t-nome').value.trim();
+            const data = document.getElementById('t-data').value;
+
+            const dupTorneio = torneios.find(t => t.id !== id && t.escalao === escalao && t.data === data && normalizarTexto(t.nome) === normalizarTexto(nome));
+            if (dupTorneio) {
+                alert(`⚠️ Torneio Duplicado!\n\nJá existe o torneio "${dupTorneio.nome}" para ${escalao} no dia ${formatarData(data)}.`);
+                return;
+            }
+
+            const dados = {
+                escalao: escalao,
+                nome: nome,
+                data: data,
+                dataLimite: document.getElementById('t-limite').value,
+                pavilhao: document.getElementById('t-pavilhao').value.trim() || "A definir"
+            };
+
+            try {
+                if (id) {
+                    await updateDoc(doc(db, "torneios", id), dados);
+                    mostrarToast("Torneio atualizado com sucesso!");
+                    limparFormTorneio();
+                } else {
+                    const docRef = await addDoc(collection(db, "torneios"), dados);
+                    limparFormTorneio();
+                    mostrarToast("Torneio adicionado!");
+                    setTimeout(() => {
+                        document.getElementById('select-torneio-ativo').value = docRef.id;
+                        renderizarConvocatoria();
+                    }, 400);
+                }
+            } catch (err) {
+                alert("Erro ao guardar torneio: " + err.message);
+            }
+        });
+
+        window.editarTorneioAtual = () => {
+            const id = document.getElementById('select-torneio-ativo').value;
+            const t = torneios.find(x => x.id === id);
+            if (!t) return;
+
+            document.getElementById('t-id').value = t.id;
+            document.getElementById('t-escalao').value = t.escalao;
+            document.getElementById('t-nome').value = t.nome;
+            document.getElementById('t-data').value = t.data;
+            document.getElementById('t-limite').value = t.dataLimite || "";
+            document.getElementById('t-pavilhao').value = t.pavilhao === "A definir" ? "" : t.pavilhao;
+
+            document.getElementById('form-torneio-titulo').textContent = "Editar Torneio";
+            document.getElementById('btn-salvar-torneio').textContent = "Atualizar Torneio";
+            document.getElementById('btn-cancelar-torneio').style.display = "inline-flex";
+            document.getElementById('form-torneio').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            document.getElementById('t-nome').focus();
+        };
+
+        window.limparFormTorneio = () => {
+            document.getElementById('form-torneio').reset();
+            document.getElementById('t-id').value = "";
+            document.getElementById('form-torneio-titulo').textContent = "Novo Torneio";
+            document.getElementById('btn-salvar-torneio').textContent = "Guardar Torneio";
+            document.getElementById('btn-cancelar-torneio').style.display = "none";
+        };
+
+        window.importarCalendarioAVB = async () => {
+            if (!confirm("Isto vai importar todas as datas do Calendário AVB 2026/27 (Minis A e Minis B), ignorando as que já existirem. Continuar?")) return;
+
+            const calendarioAVB = [
+                { escalao: "Minis A", nome: "I Torneio Clínica Dentária S. Dâmaso", dataLimite: "2026-10-18", data: "2026-10-25", pavilhao: "Municipal de Adães" },
+                { escalao: "Minis A", nome: "II Torneio Clínica Dentária S. Dâmaso", dataLimite: "2026-11-22", data: "2026-11-29", pavilhao: "Municipal de Adães" },
+                { escalao: "Minis A", nome: "III Torneio Clínica Dentária S. Dâmaso", dataLimite: "2026-12-13", data: "2026-12-20", pavilhao: "Municipal de Adães" },
+                { escalao: "Minis A", nome: "IV Torneio Clínica Dentária S. Dâmaso", dataLimite: "2027-01-17", data: "2027-01-24", pavilhao: "Municipal de Adães" },
+                { escalao: "Minis A", nome: "V Torneio Clínica Dentária S. Dâmaso", dataLimite: "2027-02-21", data: "2027-02-28", pavilhao: "Municipal de Adães" },
+                { escalao: "Minis A", nome: "VI Torneio Clínica Dentária S. Dâmaso", dataLimite: "2027-03-14", data: "2027-03-21", pavilhao: "Municipal de Adães" },
+                { escalao: "Minis A", nome: "VII Torneio Clínica Dentária S. Dâmaso", dataLimite: "2027-04-18", data: "2027-04-25", pavilhao: "Municipal de Adães" },
+                { escalao: "Minis A", nome: "VIII Torneio Clínica Dentária S. Dâmaso", dataLimite: "2027-05-16", data: "2027-05-23", pavilhao: "Municipal de Adães" },
+                { escalao: "Minis A", nome: "Festa Mini-Voleibol Clínica Dentária S. Dâmaso", dataLimite: "2027-06-13", data: "2027-06-20", pavilhao: "A definir" },
+                { escalao: "Minis B", nome: "I Torneio Clínica Dentária S. Dâmaso", dataLimite: "2026-10-04", data: "2026-10-11", pavilhao: "Municipal de Adães" },
+                { escalao: "Minis B", nome: "II Torneio Clínica Dentária S. Dâmaso", dataLimite: "2026-11-08", data: "2026-11-15", pavilhao: "Municipal de Adães" },
+                { escalao: "Minis B", nome: "III Torneio Clínica Dentária S. Dâmaso", dataLimite: "2026-12-06", data: "2026-12-13", pavilhao: "Municipal de Adães" },
+                { escalao: "Minis B", nome: "IV Torneio Clínica Dentária S. Dâmaso", dataLimite: "2027-01-03", data: "2027-01-10", pavilhao: "Municipal de Adães" },
+                { escalao: "Minis B", nome: "V Torneio Clínica Dentária S. Dâmaso", dataLimite: "2027-02-07", data: "2027-02-14", pavilhao: "Municipal de Adães" },
+                { escalao: "Minis B", nome: "VI Torneio Clínica Dentária S. Dâmaso", dataLimite: "2027-03-07", data: "2027-03-14", pavilhao: "Municipal de Adães" },
+                { escalao: "Minis B", nome: "VII Torneio Clínica Dentária S. Dâmaso", dataLimite: "2027-04-04", data: "2027-04-11", pavilhao: "Municipal de Adães" },
+                { escalao: "Minis B", nome: "VIII Torneio Clínica Dentária S. Dâmaso", dataLimite: "2027-05-09", data: "2027-05-16", pavilhao: "Municipal de Adães" },
+                { escalao: "Minis B", nome: "Campeonato Regional", dataLimite: "2027-05-23", data: "2027-05-30", pavilhao: "A definir" },
+                { escalao: "Minis B", nome: "Festa Mini-Voleibol Clínica Dentária S. Dâmaso", dataLimite: "2027-06-13", data: "2027-06-20", pavilhao: "A definir" }
+            ];
+
+            const batch = writeBatch(db);
+            let importados = 0;
+            for (const item of calendarioAVB) {
+                const jaExiste = torneios.some(t => t.escalao === item.escalao && t.data === item.data && normalizarTexto(t.nome) === normalizarTexto(item.nome));
+                if (!jaExiste) {
+                    const novoRef = doc(collection(db, "torneios"));
+                    batch.set(novoRef, item);
+                    importados++;
+                }
+            }
+            if (importados > 0) await batch.commit();
+            mostrarToast(importados > 0 ? `${importados} torneios importados!` : "Todos os torneios AVB já estavam importados.");
+        };
+
+        // Calcula a data limite de exibição (hoje - 3 dias) para priorizar os próximos torneios
+        function obterDataCorteTorneios() {
+            const d = new Date();
+            d.setHours(0, 0, 0, 0);
+            d.setDate(d.getDate() - 3);
+            const ano = d.getFullYear();
+            const mes = String(d.getMonth() + 1).padStart(2, '0');
+            const dia = String(d.getDate()).padStart(2, '0');
+            return `${ano}-${mes}-${dia}`;
+        }
+
+        window.atualizarSelectTorneios = () => {
+            const sel = document.getElementById('select-torneio-ativo');
+            const atual = sel.value;
+            const mostrarPassados = document.getElementById('mostrar-torneios-passados')?.checked;
+            const dataCorte = obterDataCorteTorneios();
+
+            if (torneios.length === 0) {
+                sel.innerHTML = '<option value="">Nenhum torneio cadastrado ainda</option>';
+                return;
+            }
+
+            const listaFiltrada = mostrarPassados
+                ? torneios
+                : torneios.filter(t => !t.data || t.data >= dataCorte);
+
+            if (listaFiltrada.length === 0) {
+                sel.innerHTML = '<option value="">Nenhum torneio próximo (marque "Mostrar passados" acima)</option>';
+                return;
+            }
+
+            sel.innerHTML = listaFiltrada.map(t => {
+                const passadoTag = (t.data && t.data < dataCorte) ? ' (Realizado)' : '';
+                return `<option value="${t.id}">[${t.escalao}] ${formatarData(t.data)} - ${t.nome}${passadoTag}</option>`;
+            }).join('');
+
+            if (atual && listaFiltrada.some(t => t.id === atual)) {
+                sel.value = atual;
+            }
+        };
+
+        window.excluirTorneioAtual = async () => {
+            const id = document.getElementById('select-torneio-ativo').value;
+            if (!id || !confirm("Excluir este torneio?")) return;
+            await deleteDoc(doc(db, "torneios", id));
+            limparFormTorneio();
+            mostrarToast("Torneio excluído.");
+        };
+
+        // ================= CONVOCATÓRIA E STATUS =================
+        window.renderizarConvocatoria = () => {
+            const torneioId = document.getElementById('select-torneio-ativo').value;
+            const painel = document.getElementById('painel-torneio-detalhes');
+            const torneio = torneios.find(t => t.id === torneioId);
+
+            if (!torneio) {
+                painel.style.display = 'none';
+                return;
+            }
+
+            painel.style.display = 'block';
+            document.getElementById('info-t-titulo').textContent = `[${torneio.escalao}] ${torneio.nome}`;
+            document.getElementById('info-t-sub').textContent = `📅 Jogo: ${formatarData(torneio.data)} • ⏳ Limite Inscrição: ${formatarData(torneio.dataLimite)} • 📍 ${torneio.pavilhao}`;
+
+            const inscTorneio = inscricoes.filter(i => i.torneioId === torneioId);
+            const aut = inscTorneio.filter(i => i.status === 'autorizado').length;
+            const pen = inscTorneio.filter(i => i.status === 'pendente').length;
+            const rec = inscTorneio.filter(i => i.status === 'recusado').length;
+
+            document.getElementById('count-aut').textContent = aut;
+            document.getElementById('count-pen').textContent = pen;
+            document.getElementById('count-rec').textContent = rec;
+
+            const filtroEsc = document.getElementById('filtro-conv-escalao').value;
+            const filtroStatus = document.getElementById('filtro-conv-status').value;
+
+            const atletasExibir = atletas.filter(a => {
+                const insc = inscTorneio.find(i => i.atletaId === a.id);
+                const statusAtleta = insc ? insc.status : 'nao_convocado';
+                const escAtleta = (a.escalao || "").trim();
+                const escTorneio = (torneio.escalao || "").trim();
+
+                // 1. Filtro de Escalão (respeita estritamente a escolha do utilizador)
+                let matchEsc = true;
+                if (filtroEsc === "DO_TORNEIO") {
+                    matchEsc = (escAtleta === escTorneio);
+                } else if (filtroEsc !== "TODOS") {
+                    matchEsc = (escAtleta === filtroEsc);
+                }
+
+                // 2. Filtro de Estado (Autorizados, Pendentes, Recusados, Não Convocados)
+                let matchStatus = true;
+                if (filtroStatus !== "TODOS") {
+                    matchStatus = (statusAtleta === filtroStatus);
+                }
+
+                return matchEsc && matchStatus;
+            });
+
+            const container = document.getElementById('lista-convocatoria');
+
+            if (atletasExibir.length === 0) {
+                container.innerHTML = `<p style="color:var(--mid-gray); padding:16px 0;">Nenhum atleta encontrado para os filtros selecionados.</p>`;
+                return;
+            }
+
+            container.innerHTML = atletasExibir.map(atleta => {
+                const insc = inscTorneio.find(i => i.atletaId === atleta.id);
+                const status = insc ? insc.status : 'nao_convocado';
+
+                let badgeHtml = `<span class="badge" style="background:#e4e4e7; color:#3f3f46;">Não convocado</span>`;
+                if (status === 'pendente') badgeHtml = `<span class="badge status-pendente">⏳ Aguardando Pais</span>`;
+                if (status === 'autorizado') badgeHtml = `<span class="badge status-autorizado">✅ Autorizado</span>`;
+                if (status === 'recusado') badgeHtml = `<span class="badge status-recusado">❌ Recusado</span>`;
+
+                const badgeEscalao = `<span class="badge ${atleta.escalao === 'Minis A' ? 'badge-a' : 'badge-b'}" style="margin-left:6px; vertical-align:middle;">${atleta.escalao}</span>`;
+                const poloExibir = normalizarPolo(atleta.polo);
+                const poloInfo = poloExibir !== "Não definido" ? `${poloExibir} • ` : "";
+                const genInfo = atleta.genero ? `${atleta.genero} • ` : "";
+                const docInfo = atleta.docNum ? `${atleta.docTipo}: ${atleta.docNum} • ` : "";
+
+                return `
+                    <div class="convocatoria-item">
+                        <div class="convocatoria-info">
+                            <div><strong>${atleta.nome}</strong>${badgeEscalao}</div>
+                            <small>${genInfo}${poloInfo}${docInfo}Nasc: ${formatarNascimento(atleta.nascimento)}</small>
+                        </div>
+                        <div class="status-actions">
+                            ${badgeHtml}
+                            ${status === 'nao_convocado' ? `
+                                <button class="btn-primary btn-sm" style="width:auto;" onclick="definirStatus('${torneioId}', '${atleta.id}', 'pendente')">Convocar</button>
+                            ` : `
+                                <div style="display:flex; gap:5px; align-items:center;">
+                                    <button class="btn-secondary btn-sm" title="Marcar Autorizado" onclick="definirStatus('${torneioId}', '${atleta.id}', 'autorizado')">✅</button>
+                                    <button class="btn-secondary btn-sm" title="Marcar Pendente" onclick="definirStatus('${torneioId}', '${atleta.id}', 'pendente')">⏳</button>
+                                    <button class="btn-secondary btn-sm" title="Marcar Recusado" onclick="definirStatus('${torneioId}', '${atleta.id}', 'recusado')">❌</button>
+                                    <button class="btn-danger" title="Remover da convocatória" onclick="removerConvocatoria('${torneioId}', '${atleta.id}')">Remover</button>
+                                </div>
+                            `}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        };
+
+        window.definirStatus = async (torneioId, atletaId, status) => {
+            const docId = `${torneioId}_${atletaId}`;
+            await setDoc(doc(db, "inscricoes", docId), {
+                torneioId: torneioId,
+                atletaId: atletaId,
+                status: status,
+                atualizadoEm: new Date().toISOString()
+            });
+            mostrarToast("Estado atualizado!");
+        };
+
+        window.removerConvocatoria = async (torneioId, atletaId) => {
+            const docId = `${torneioId}_${atletaId}`;
+            await deleteDoc(doc(db, "inscricoes", docId));
+            mostrarToast("Atleta removido deste torneio.");
+        };
+
+        window.convocarPorFiltro = async (alvo, btn) => {
+            const torneioId = document.getElementById('select-torneio-ativo').value;
+            const torneio = torneios.find(t => t.id === torneioId);
+            if (!torneio) {
+                alert("Selecione um torneio primeiro.");
+                return;
+            }
+
+            if (atletas.length === 0) {
+                alert("A lista de atletas ainda está a carregar ou está vazia.");
+                return;
+            }
+
+            const listaAlvo = alvo === 'TODOS'
+                ? atletas
+                : atletas.filter(a => (a.escalao || "").trim() === alvo);
+
+            if (listaAlvo.length === 0) {
+                alert(`Não existem atletas cadastrados no escalão ${alvo}.`);
+                return;
+            }
+
+            const textoOriginal = btn ? btn.textContent : "";
+            if (btn) {
+                btn.disabled = true;
+                btn.textContent = "A convocar...";
+            }
+
+            try {
+                const batch = writeBatch(db);
+                let adicionados = 0;
+
+                for (const atleta of listaAlvo) {
+                    const jaEsta = inscricoes.some(i => i.torneioId === torneioId && i.atletaId === atleta.id);
+                    if (!jaEsta) {
+                        const docId = `${torneioId}_${atleta.id}`;
+                        batch.set(doc(db, "inscricoes", docId), {
+                            torneioId: torneioId,
+                            atletaId: atleta.id,
+                            status: 'pendente',
+                            atualizadoEm: new Date().toISOString()
+                        });
+                        adicionados++;
+                    }
+                }
+
+                if (adicionados > 0) {
+                    await batch.commit();
+                    mostrarToast(`✅ ${adicionados} atletas (${alvo === 'TODOS' ? 'Todos' : alvo}) convocados!`);
+                    if (alvo === 'TODOS' || alvo !== (torneio.escalao || "").trim()) {
+                        document.getElementById('filtro-conv-escalao').value = 'TODOS';
+                    }
+                    document.getElementById('filtro-conv-status').value = 'TODOS';
+                    renderizarConvocatoria();
+                } else {
+                    mostrarToast(`Todos os atletas de ${alvo === 'TODOS' ? 'todos os escalões' : alvo} já estavam convocados.`);
+                }
+            } catch (err) {
+                alert("Erro ao convocar em lote: " + err.message);
+            } finally {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.textContent = textoOriginal;
+                }
+            }
+        };
+
+        window.desconvocarTodosDoTorneio = async (btn) => {
+            const torneioId = document.getElementById('select-torneio-ativo').value;
+            if (!torneioId) return;
+
+            const inscTorneio = inscricoes.filter(i => i.torneioId === torneioId);
+            if (inscTorneio.length === 0) {
+                mostrarToast("Não há atletas convocados neste torneio.");
+                return;
+            }
+
+            if (!confirm(`Tem a certeza que deseja remover TODOS os ${inscTorneio.length} atletas convocados deste torneio (incluindo os já autorizados)?`)) return;
+
+            const textoOriginal = btn ? btn.textContent : "";
+            if (btn) {
+                btn.disabled = true;
+                btn.textContent = "A remover...";
+            }
+
+            try {
+                const batch = writeBatch(db);
+                inscTorneio.forEach(i => {
+                    batch.delete(doc(db, "inscricoes", i.id));
+                });
+                await batch.commit();
+                mostrarToast("Todos os atletas foram desconvocados deste torneio.");
+            } catch (err) {
+                alert("Erro ao desconvocar: " + err.message);
+            } finally {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.textContent = textoOriginal;
+                }
+            }
+        };
+
+        function formatarData(iso) {
+            if (!iso) return "-";
+            const [y, m, d] = iso.split('-');
+            return `${d}/${m}/${y}`;
+        }
+
+        function formatarNascimento(val) {
+            if (!val) return "-";
+            const str = String(val);
+            if (str.length === 4) return str;
+            return formatarData(str);
+        }
+    </script>
+</body>
+</html>
