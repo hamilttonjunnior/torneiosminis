@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Equipas & Treinadores | Mini-Voleibol</title>
+    <style>
+        :root {
+            --black: #0a0a0a;
+            --dark-gray: #1f2937;
+            --mid-gray: #4b5563;
+            --light-gray: #9ca3af;
+            --bg: #f4f4f5;
+            --card: #ffffff;
+            --text: #111827;
+            --border: #d4d4d8;
+            --success: #16a34a;
+            --warning: #d97706;
+            --danger: #dc2626;
+            --promo: #0284c7;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
+        body { background: var(--bg); color: var(--text); line-height: 1.5; padding-bottom: 40px; -webkit-tap-highlight-color: transparent; }
+
+        /* Login Overlay */
+        #login-overlay {
+            position: fixed; inset: 0; background: var(--black);
+            display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 16px;
+        }
+        .login-box {
+            background: var(--card); padding: 28px 22px; border-radius: 16px; width: 100%; max-width: 380px;
+            text-align: center; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5); border: 1px solid var(--dark-gray);
+        }
+        .login-box img { max-height: 75px; margin-bottom: 16px; object-fit: contain; }
+        .login-box h2 { margin-bottom: 6px; font-size: 1.25rem; color: var(--black); }
+        .login-box p { color: var(--mid-gray); font-size: 0.9rem; margin-bottom: 20px; }
+
+        /* Header */
+        header {
+            background: var(--black); color: white; padding: 16px 24px;
+            display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px;
+            border-bottom: 3px solid var(--dark-gray);
+        }
+        .brand { display: flex; align-items: center; gap: 12px; }
+        .brand img {
+            height: 50px; width: 50px; object-fit: contain; background: white;
+            border-radius: 10px; padding: 4px; flex-shrink: 0;
+        }
+        .brand h1 { font-size: 1.18rem; font-weight: 700; letter-spacing: -0.3px; }
+        .brand span { font-size: 0.84rem; color: var(--light-gray); display: block; }
+
+        .nav-links { display: flex; gap: 8px; flex-wrap: wrap; }
+        .nav-links a {
+            color: #f4f4f5; text-decoration: none; font-size: 0.83rem; padding: 8px 12px;
+            border-radius: 8px; border: 1px solid #3f3f46; background: #18181b; transition: 0.2s; font-weight: 600;
+            text-align: center;
+        }
+        .nav-links a:hover { background: white; color: var(--black); border-color: white; }
+
+        .container { max-width: 1280px; margin: 20px auto; padding: 0 16px; }
+
+        /* Tabs */
+        .tabs { display: flex; gap: 8px; margin-bottom: 20px; border-bottom: 2px solid var(--border); padding-bottom: 10px; flex-wrap: wrap; }
+        .tab-btn {
+            background: transparent; border: 1px solid transparent; padding: 10px 16px; font-size: 0.92rem;
+            font-weight: 600; color: var(--mid-gray); cursor: pointer; border-radius: 8px; transition: 0.2s;
+            display: inline-flex; align-items: center; gap: 8px;
+        }
+        .tab-btn:hover { background: #e4e4e7; color: var(--black); }
+        .tab-btn.active { background: var(--black); color: white; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        /* Cards & Inputs */
+        .card {
+            background: var(--card); border-radius: 12px; padding: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06); border: 1px solid var(--border);
+            margin-bottom: 18px;
+        }
+        .card h2 {
+            font-size: 1.06rem; margin-bottom: 14px; display: flex; align-items: center;
+            justify-content: space-between; color: var(--black); border-bottom: 1px solid #f4f4f5; padding-bottom: 10px;
+            flex-wrap: wrap; gap: 8px;
+        }
+
+        label { display: block; font-size: 0.8rem; font-weight: 700; margin-bottom: 4px; color: var(--dark-gray); text-transform: uppercase; }
+        input, select {
+            width: 100%; padding: 9px 11px; border: 1px solid var(--border); border-radius: 8px;
+            font-size: 0.92rem; background: #fff; color: var(--text);
+        }
+        input:focus, select:focus { outline: none; border-color: var(--black); }
+
+        button {
+            cursor: pointer; border: none; border-radius: 8px; font-weight: 600; font-size: 0.88rem;
+            padding: 9px 14px; transition: 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+            touch-action: manipulation;
+        }
+        .btn-primary { background: var(--black); color: white; }
+        .btn-primary:hover { background: var(--dark-gray); }
+        .btn-success { background: var(--success); color: white; }
+        .btn-success:hover { background: #15803d; }
+        .btn-secondary { background: #e4e4e7; color: var(--black); border: 1px solid #d4d4d8; }
+        .btn-secondary:hover { background: #d4d4d8; }
+        .btn-dark-outline { background: white; color: var(--black); border: 1px solid var(--black); }
+        .btn-dark-outline:hover { background: var(--black); color: white; }
+        .btn-danger { background: #fafafa; color: var(--danger); border: 1px solid #fca5a5; padding: 6px 10px; font-size: 0.8rem; }
+        .btn-danger:hover { background: var(--danger); color: white; border-color: var(--danger); }
+        .btn-sm { padding: 6px 10px; font-size: 0.8rem; }
+
+        /* Barra de Contexto */
+        .context-bar {
+            display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: end;
+            background: #fafafa; padding: 14px; border-radius: 10px; border: 1px solid var(--border); margin-bottom: 16px;
+        }
+        .context-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+        /* Layout de Distribuição: Pool Esquerda + Equipas Direita */
+        .board-grid {
+            display: grid; grid-template-columns: 340px 1fr; gap: 18px; align-items: start;
+        }
+
+        .pool-card {
+            background: var(--card); border-radius: 12px; padding: 16px;
+            border: 1px solid var(--border); position: sticky; top: 16px;
+        }
+        .pool-header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding-bottom: 10px; border-bottom: 1px solid var(--border); margin-bottom: 12px;
+        }
+        .pool-header h3 { font-size: 0.96rem; color: var(--black); }
+
+        .teams-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(310px, 1fr)); gap: 16px;
+        }
+
+        .team-box {
+            background: var(--card); border-radius: 12px; border: 1px solid var(--border);
+            overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .team-box-header {
+            background: var(--black); color: white; padding: 12px 14px;
+            display: flex; justify-content: space-between; align-items: center; gap: 8px;
+        }
+        .team-box-header input.team-title-input {
+            background: transparent; border: 1px solid transparent; color: white;
+            font-weight: 700; font-size: 0.98rem; padding: 3px 6px; border-radius: 6px; width: 100%;
+        }
+        .team-box-header input.team-title-input:hover,
+        .team-box-header input.team-title-input:focus {
+            background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.3);
+        }
+        .team-coach-bar {
+            background: #f4f4f5; padding: 9px 14px; border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; gap: 8px;
+        }
+        .team-coach-bar select {
+            padding: 6px 8px; font-size: 0.84rem; font-weight: 600;
+        }
+        .team-body { padding: 12px 14px; min-height: 110px; }
+
+        /* Cartões de Atleta */
+        .athlete-row {
+            display: flex; align-items: center; justify-content: space-between; gap: 8px;
+            padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px;
+            margin-bottom: 7px; background: #fafafa; font-size: 0.86rem;
+        }
+        .athlete-row.outro-esc {
+            background: #fffbeb; border-color: #f59e0b;
+        }
+        .athlete-row.promo-highlight {
+            border-left: 4px solid #0284c7;
+        }
+        .athlete-main { min-width: 0; flex: 1; }
+        .athlete-main strong { display: block; color: var(--black); font-size: 0.88rem; }
+        .athlete-meta { font-size: 0.75rem; color: var(--mid-gray); display: flex; flex-wrap: wrap; gap: 4px; align-items: center; margin-top: 2px; }
+
+        .badge {
+            padding: 2px 7px; border-radius: 999px; font-size: 0.68rem; font-weight: 700; display: inline-block;
+        }
+        .badge-a { background: var(--black); color: white; }
+        .badge-b { background: #e4e4e7; color: var(--black); border: 1px solid #a1a1aa; }
+        .badge-amber { background: #fef3c7; color: #92400e; border: 1px solid #f59e0b; }
+        .badge-promo { background: #e0f2fe; color: #0369a1; border: 1px solid #38bdf8; }
+
+        .assign-select {
+            width: auto; max-width: 135px; padding: 5px 7px; font-size: 0.78rem; font-weight: 600;
+        }
+
+        /* Gestão de Treinadores */
+        .coach-grid { display: grid; grid-template-columns: 340px 1fr; gap: 20px; align-items: start; }
+        .coach-item {
+            display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;
+            padding: 12px 14px; border: 1px solid var(--border); border-radius: 10px; margin-bottom: 8px; background: #fafafa;
+        }
+
+        .toast {
+            position: fixed; bottom: 20px; right: 20px; background: var(--black); color: white;
+            padding: 11px 18px; border-radius: 8px; box-shadow: 0 10px 15px rgba(0,0,0,0.3);
+            display: none; z-index: 2000; font-size: 0.88rem; font-weight: 600;
+        }
+
+        @media (max-width: 920px) {
+            .board-grid, .coach-grid { grid-template-columns: 1fr; }
+            .pool-card { position: static; }
+        }
+        @media (max-width: 640px) {
+            header { padding: 14px 16px; flex-direction: column; align-items: stretch; }
+            .nav-links { display: grid; grid-template-columns: 1fr 1fr; }
+            .context-bar { grid-template-columns: 1fr; }
+            .teams-grid { grid-template-columns: 1fr; }
+            input, select { font-size: 16px; }
+            .assign-select { font-size: 13px; max-width: 125px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Login -->
+    <div id="login-overlay">
+        <div class="login-box">
+            <img src="logo.png" alt="Logo" onerror="this.style.display='none'">
+            <h2>Equipas & Treinadores</h2>
+            <p>Área reservada à equipa técnica</p>
+            <div style="margin-bottom:14px;">
+                <input type="password" id="admin-pass" placeholder="Senha de acesso..." onkeypress="if(event.key==='Enter') verificarSenha()">
+            </div>
+            <button class="btn-primary" style="width:100%;" onclick="verificarSenha()">Entrar</button>
+        </div>
+    </div>
+
+    <header>
+        <div class="brand">
+            <img src="logo.png" alt="Logo" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2280%22>🏐</text></svg>'">
+            <div>
+                <h1>Equipas & Treinadores</h1>
+                <span>Distribuição de Treinos e Torneios • Mini-Voleibol</span>
+            </div>
+        </div>
+        <div class="nav-links">
+            <a href="index.html">⚙️ Administração</a>
+            <a href="lista.html" target="_blank">📋 Lista Confirmados</a>
+            <a href="pais.html" target="_blank">🔗 Página Pais</a>
+            <a href="inscricao.html" target="_blank">📝 Inscrição</a>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="tabs">
+            <button class="tab-btn active" onclick="mudarAba('torneios', this)">🏆 Equipas de Torneio</button>
+            <button class="tab-btn" onclick="mudarAba('treinos', this)">🏐 Grupos de Treino</button>
+            <button class="tab-btn" onclick="mudarAba('treinadores', this)"> whistle Treinadores (<span id="count-treinadores">0</span>)</button>
+        </div>
+
+        <!-- ======================================================= -->
+        <!-- ABA 1: DISTRIBUIÇÃO DE EQUIPAS POR TORNEIO              -->
+        <!-- ======================================================= -->
+        <div id="tab-torneios" class="tab-content active">
+            <div class="card">
+                <div class="context-bar">
+                    <div>
+                        <label for="sel-torneio-eq">Selecione o Torneio (Carrega Atletas Autorizados)</label>
+                        <select id="sel-torneio-eq" onchange="renderizarBoardTorneio()">
+                            <option value="">A carregar torneios...</option>
+                        </select>
+                    </div>
+                    <div class="context-actions">
+                        <button type="button" class="btn-primary" onclick="adicionarEquipaTorneio()">+ Nova Equipa</button>
+                        <button type="button" class="btn-dark-outline" onclick="copiarWhatsAppBoard('torneio')">📋 WhatsApp</button>
+                        <button type="button" class="btn-secondary" onclick="imprimirBoard('torneio')">🖨️ Imprimir / PDF</button>
+                    </div>
+                </div>
+
+                <div id="board-torneio-wrapper"></div>
+            </div>
+        </div>
+
+        <!-- ======================================================= -->
+        <!-- ABA 2: GRUPOS DE TREINO POR POLO / ESCALÃO              -->
+        <!-- ======================================================= -->
+        <div id="tab-treinos" class="tab-content">
+            <div class="card">
+                <div class="context-bar">
+                    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:10px;">
+                        <div>
+                            <label for="sel-polo-treino">Polo de Treino</label>
+                            <select id="sel-polo-treino" onchange="renderizarBoardTreino()">
+                                <option value="Polo de Manhente">Polo de Manhente</option>
+                                <option value="Polo Barcelos">Polo Barcelos</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="sel-esc-treino">Escalão</label>
+                            <select id="sel-esc-treino" onchange="renderizarBoardTreino()">
+                                <option value="TODOS">Todos (Minis A + B)</option>
+                                <option value="Minis A">Minis A</option>
+                                <option value="Minis B">Minis B</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="context-actions">
+                        <button type="button" class="btn-primary" onclick="adicionarGrupoTreino()">+ Novo Grupo de Treino</button>
+                        <button type="button" class="btn-dark-outline" onclick="copiarWhatsAppBoard('treino')">📋 WhatsApp</button>
+                        <button type="button" class="btn-secondary" onclick="imprimirBoard('treino')">🖨️ Imprimir / PDF</button>
+                    </div>
+                </div>
+
+                <div id="board-treino-wrapper"></div>
+            </div>
+        </div>
+
+        <!-- ======================================================= -->
+        <!-- ABA 3: GESTÃO DE TREINADORES                            -->
+        <!-- ======================================================= -->
+        <div id="tab-treinadores" class="tab-content">
+            <div class="coach-grid">
+                <div class="card">
+                    <h2>Adicionar Treinador/a</h2>
+                    <form id="form-treinador">
+                        <div style="margin-bottom:12px;">
+                            <label>Nome do Treinador/a</label>
+                            <input type="text" id="tr-nome" placeholder="Ex: Prof. Hamilton / Ricardo" required>
+                        </div>
+                        <div style="margin-bottom:12px;">
+                            <label>Polo Habitual</label>
+                            <select id="tr-polo">
+                                <option value="Ambos os Polos">Ambos os Polos</option>
+                                <option value="Polo de Manhente">Polo de Manhente</option>
+                                <option value="Polo Barcelos">Polo Barcelos</option>
+                            </select>
+                        </div>
+                        <div style="margin-bottom:14px;">
+                            <label>Contacto <span style="font-weight:400; color:var(--mid-gray);">(Opcional)</span></label>
+                            <input type="text" id="tr-contato" placeholder="Ex: 910 000 000">
+                        </div>
+                        <button type="submit" class="btn-primary" style="width:100%;">Guardar Treinador</button>
+                    </form>
+                </div>
+
+                <div class="card">
+                    <h2>Equipa Técnica Registada</h2>
+                    <div id="lista-treinadores"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import {
+            getFirestore, collection, addDoc, updateDoc, deleteDoc, doc,
+            onSnapshot, query, orderBy, setDoc
+        } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDHrazgKg6ezFPMyclQyc8keXXGV6QGG38",
+            authDomain: "inscricoesminis.firebaseapp.com",
+            projectId: "inscricoesminis",
+            storageBucket: "inscricoesminis.firebasestorage.app",
+            messagingSenderId: "1005618476458",
+            appId: "1:1005618476458:web:0675310fae2bfd989ae7d3",
+            measurementId: "G-6QYJ3MC92P"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Login
+        const SENHA_ADMIN = "minis2026";
+        window.verificarSenha = () => {
+            if (document.getElementById('admin-pass').value === SENHA_ADMIN) {
+                sessionStorage.setItem('minis_admin', 'ok');
+                document.getElementById('login-overlay').style.display = 'none';
+            } else {
+                alert("Senha incorreta!");
+            }
+        };
+        if (sessionStorage.getItem('minis_admin') === 'ok') {
+            document.getElementById('login-overlay').style.display = 'none';
+        }
+
+        // Corrige ícone da aba treinadores
+        document.querySelectorAll('.tab-btn')[2].innerHTML = `📋 Treinadores (<span id="count-treinadores">0</span>)`;
+
+        let atletas = [];
+        let torneios = [];
+        let inscricoes = [];
+        let treinadores = [];
+        let distribuicoes = {}; // docId -> { grupos: [ { id, nome, treinadorId, atletaIds: [] } ] }
+
+        function normalizarPolo(polo) {
+            if (!polo) return "Não definido";
+            if (polo === "Polo Gonçalo Nunes" || polo === "Polo Barcelos") return "Polo Barcelos";
+            return polo;
+        }
+
+        window.mostrarToast = (msg) => {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.style.display = 'block';
+            setTimeout(() => t.style.display = 'none', 2800);
+        };
+
+        window.mudarAba = (aba, btn) => {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById('tab-' + aba).classList.add('active');
+            btn.classList.add('active');
+        };
+
+        // Listeners Firebase
+        onSnapshot(query(collection(db, "atletas"), orderBy("nome")), (snap) => {
+            atletas = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            renderizarBoardTorneio();
+            renderizarBoardTreino();
+        });
+
+        onSnapshot(query(collection(db, "torneios"), orderBy("data")), (snap) => {
+            torneios = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            atualizarSelectTorneios();
+            renderizarBoardTorneio();
+        });
+
+        onSnapshot(collection(db, "inscricoes"), (snap) => {
+            inscricoes = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            renderizarBoardTorneio();
+        });
+
+        onSnapshot(query(collection(db, "treinadores"), orderBy("nome")), (snap) => {
+            treinadores = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            document.getElementById('count-treinadores').textContent = treinadores.length;
+            renderizarTreinadores();
+            renderizarBoardTorneio();
+            renderizarBoardTreino();
+        });
+
+        onSnapshot(collection(db, "distribuicoes_equipas"), (snap) => {
+            distribuicoes = {};
+            snap.docs.forEach(d => {
+                distribuicoes[d.id] = d.data();
+            });
+            renderizarBoardTorneio();
+            renderizarBoardTreino();
+        });
+
+        // ================= GESTÃO DE TREINADORES =================
+        document.getElementById('form-treinador').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const nome = document.getElementById('tr-nome').value.trim();
+            if (!nome) return;
+
+            await addDoc(collection(db, "treinadores"), {
+                nome: nome,
+                polo: document.getElementById('tr-polo').value,
+                contato: document.getElementById('tr-contato').value.trim()
+            });
+            document.getElementById('form-treinador').reset();
+            mostrarToast("Treinador/a adicionado!");
+        });
+
+        window.removerTreinador = async (id, nome) => {
+            if (!confirm(`Remover "${nome}" da lista de treinadores?`)) return;
+            await deleteDoc(doc(db, "treinadores", id));
+            mostrarToast("Treinador removido.");
+        };
+
+        function renderizarTreinadores() {
+            const box = document.getElementById('lista-treinadores');
+            if (treinadores.length === 0) {
+                box.innerHTML = `<p style="color:var(--mid-gray); font-size:0.9rem;">Ainda não há treinadores registados. Adicione ao lado para poder associá-los às equipas.</p>`;
+                return;
+            }
+            box.innerHTML = treinadores.map(tr => `
+                <div class="coach-item">
+                    <div>
+                        <strong style="font-size:0.96rem; color:var(--black);">${tr.nome}</strong>
+                        <div style="font-size:0.8rem; color:var(--mid-gray);">
+                            📍 ${tr.polo || 'Ambos os Polos'} ${tr.contato ? `• 📞 ${tr.contato}` : ''}
+                        </div>
+                    </div>
+                    <button type="button" class="btn-danger" onclick="removerTreinador('${tr.id}', '${tr.nome.replace(/'/g, "\\'")}')">🗑️ Remover</button>
+                </div>
+            `).join('');
+        }
+
+        // ================= ATUALIZAR SELECT DE TORNEIOS =================
+        function atualizarSelectTorneios() {
+            const sel = document.getElementById('sel-torneio-eq');
+            const atual = sel.value;
+            const d = new Date();
+            d.setDate(d.getDate() - 3);
+            const corte = d.toISOString().slice(0, 10);
+
+            const ativos = torneios.filter(t => !t.data || t.data >= corte);
+            const lista = ativos.length > 0 ? ativos : torneios;
+
+            if (lista.length === 0) {
+                sel.innerHTML = `<option value="">Nenhum torneio cadastrado</option>`;
+                return;
+            }
+
+            sel.innerHTML = lista.map(t => {
+                const qtdAut = inscricoes.filter(i => i.torneioId === t.id && i.status === 'autorizado').length;
+                return `<option value="${t.id}">[${t.escalao}] ${formatarData(t.data)} - ${t.nome} (${qtdAut} confirmados)</option>`;
+            }).join('');
+
+            if (atual && lista.some(t => t.id === atual)) {
+                sel.value = atual;
+            }
+        }
+
+        // ================= ALTERAR RADAR PROMOÇÃO DIRETO NO CARTÃO =================
+        window.alterarPromocaoRapida = async (atletaId, novoStatus) => {
+            await updateDoc(doc(db, "atletas", atletaId), {
+                promocaoStatus: novoStatus
+            });
+            mostrarToast("Estado de subida atualizado!");
+        };
+
+        // ================= PERSISTÊNCIA DAS EQUIPAS / GRUPOS =================
+        async function salvarGruposBoard(boardKey, grupos) {
+            await setDoc(doc(db, "distribuicoes_equipas", boardKey), {
+                grupos: grupos,
+                atualizadoEm: new Date().toISOString()
+            });
+        }
+
+        function obterGruposBoard(boardKey, prefixoPadrao) {
+            if (distribuicoes[boardKey] && Array.isArray(distribuicoes[boardKey].grupos)) {
+                return JSON.parse(JSON.stringify(distribuicoes[boardKey].grupos));
+            }
+            return [
+                { id: 'g1_' + Date.now(), nome: `${prefixoPadrao} 1`, treinadorId: '', atletaIds: [] },
+                { id: 'g2_' + (Date.now() + 1), nome: `${prefixoPadrao} 2`, treinadorId: '', atletaIds: [] }
+            ];
+        }
+
+        // ================= RENDERIZAR BOARD GENÉRICO =================
+        function renderizarBoard({ wrapperId, boardKey, atletasDisponiveis, escContexto, prefixoGrupo }) {
+            const wrapper = document.getElementById(wrapperId);
+            if (!boardKey) {
+                wrapper.innerHTML = `<p style="color:var(--mid-gray);">Selecione um torneio acima.</p>`;
+                return;
+            }
+
+            const grupos = obterGruposBoard(boardKey, prefixoGrupo);
+            const idsAlocados = new Set();
+            grupos.forEach(g => {
+                g.atletaIds = (g.atletaIds || []).filter(id => atletasDisponiveis.some(a => a.id === id));
+                g.atletaIds.forEach(id => idsAlocados.add(id));
+            });
+
+            const naoAlocados = atletasDisponiveis.filter(a => !idsAlocados.has(a.id));
+
+            const opcoesTreinadores = `<option value="">— Sem treinador atribuído —</option>` +
+                treinadores.map(tr => `<option value="${tr.id}">${tr.nome}</option>`).join('');
+
+            const renderCartaoAtleta = (a, grupoAtualId) => {
+                const escAtleta = (a.escalao || "").trim();
+                const ehOutroEsc = escContexto && escContexto !== "TODOS" && escAtleta && escAtleta !== escContexto;
+                const promo = a.promocaoStatus || "manter";
+
+                const opcoesDestino = `
+                    <option value="">Sem equipa</option>
+                    ${grupos.map(g => `<option value="${g.id}" ${g.id === grupoAtualId ? 'selected' : ''}>${g.nome}</option>`).join('')}
+                `;
+
+                return `
+                    <div class="athlete-row ${ehOutroEsc ? 'outro-esc' : ''} ${promo !== 'manter' ? 'promo-highlight' : ''}">
+                        <div class="athlete-main">
+                            <strong>${a.nome}</strong>
+                            <div class="athlete-meta">
+                                <span class="badge ${ehOutroEsc ? 'badge-amber' : (escAtleta === 'Minis A' ? 'badge-a' : 'badge-b')}">${escAtleta}</span>
+                                <span>${a.genero === 'Feminino' ? 'Fem' : (a.genero === 'Masculino' ? 'Masc' : '')}</span>
+                                <select title="Sinalizar aptidão para subir de escalão" onchange="alterarPromocaoRapida('${a.id}', this.value)" style="width:auto; padding:1px 4px; font-size:0.7rem; border-radius:6px; background:${promo !== 'manter' ? '#e0f2fe' : '#fff'};">
+                                    <option value="manter" ${promo === 'manter' ? 'selected' : ''}>Minis</option>
+                                    <option value="observacao" ${promo === 'observacao' ? 'selected' : ''}>👀 Obs.</option>
+                                    <option value="infantis" ${promo === 'infantis' ? 'selected' : ''}>⬆️ Infantis</option>
+                                    <option value="iniciadas" ${promo === 'iniciadas' ? 'selected' : ''}>⬆️ Iniciadas</option>
+                                </select>
+                            </div>
+                        </div>
+                        <select class="assign-select" onchange="moverAtletaBoard('${boardKey}', '${prefixoGrupo}', '${a.id}', this.value)">
+                            ${opcoesDestino}
+                        </select>
+                    </div>
+                `;
+            };
+
+            wrapper.innerHTML = `
+                <div class="board-grid">
+                    <div class="pool-card">
+                        <div class="pool-header">
+                            <h3>Por Distribuir (${naoAlocados.length})</h3>
+                            <span style="font-size:0.75rem; color:var(--mid-gray);">Total: ${atletasDisponiveis.length}</span>
+                        </div>
+                        ${atletasDisponiveis.length === 0 ? `
+                            <p style="font-size:0.85rem; color:var(--mid-gray);">Nenhum atleta disponível nesta seleção.</p>
+                        ` : (naoAlocados.length === 0 ? `
+                            <p style="font-size:0.85rem; color:var(--success); font-weight:600;">✅ Todos os atletas já foram distribuídos!</p>
+                        ` : naoAlocados.map(a => renderCartaoAtleta(a, '')).join(''))}
+                    </div>
+
+                    <div class="teams-grid">
+                        ${grupos.map(g => {
+                            const membros = g.atletaIds
+                                .map(id => atletasDisponiveis.find(a => a.id === id))
+                                .filter(Boolean);
+
+                            return `
+                                <div class="team-box">
+                                    <div class="team-box-header">
+                                        <input type="text" class="team-title-input" value="${g.nome.replace(/"/g, '&quot;')}" onchange="renomearGrupoBoard('${boardKey}', '${prefixoGrupo}', '${g.id}', this.value)">
+                                        <span style="font-size:0.78rem; background:rgba(255,255,255,0.18); padding:2px 8px; border-radius:999px; white-space:nowrap;">${membros.length} atl.</span>
+                                        <button type="button" style="background:transparent; color:#fca5a5; padding:2px 6px; font-size:0.95rem;" title="Apagar equipa/grupo" onclick="removerGrupoBoard('${boardKey}', '${prefixoGrupo}', '${g.id}')">✕</button>
+                                    </div>
+                                    <div class="team-coach-bar">
+                                        <span style="font-size:0.8rem; font-weight:700; color:var(--dark-gray); white-space:nowrap;">Treinador:</span>
+                                        <select onchange="atribuirTreinadorGrupo('${boardKey}', '${prefixoGrupo}', '${g.id}', this.value)">
+                                            ${opcoesTreinadores.replace(`value="${g.treinadorId}"`, `value="${g.treinadorId}" selected`)}
+                                        </select>
+                                    </div>
+                                    <div class="team-body">
+                                        ${membros.length === 0
+                                            ? `<p style="font-size:0.82rem; color:var(--light-gray); text-align:center; padding:24px 8px;">Selecione atletas na lista à esquerda para adicionar aqui.</p>`
+                                            : membros.map(a => renderCartaoAtleta(a, g.id)).join('')}
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        // ================= AÇÕES NOS BOARDS =================
+        window.moverAtletaBoard = async (boardKey, prefixo, atletaId, destinoGrupoId) => {
+            const grupos = obterGruposBoard(boardKey, prefixo);
+            grupos.forEach(g => {
+                g.atletaIds = (g.atletaIds || []).filter(id => id !== atletaId);
+                if (g.id === destinoGrupoId) {
+                    g.atletaIds.push(atletaId);
+                }
+            });
+            await salvarGruposBoard(boardKey, grupos);
+        };
+
+        window.renomearGrupoBoard = async (boardKey, prefixo, grupoId, novoNome) => {
+            const grupos = obterGruposBoard(boardKey, prefixo);
+            const g = grupos.find(x => x.id === grupoId);
+            if (g && novoNome.trim()) {
+                g.nome = novoNome.trim();
+                await salvarGruposBoard(boardKey, grupos);
+                mostrarToast("Nome atualizado!");
+            }
+        };
+
+        window.atribuirTreinadorGrupo = async (boardKey, prefixo, grupoId, treinadorId) => {
+            const grupos = obterGruposBoard(boardKey, prefixo);
+            const g = grupos.find(x => x.id === grupoId);
+            if (g) {
+                g.treinadorId = treinadorId;
+                await salvarGruposBoard(boardKey, grupos);
+                mostrarToast("Treinador atribuído!");
+            }
+        };
+
+        window.removerGrupoBoard = async (boardKey, prefixo, grupoId) => {
+            const grupos = obterGruposBoard(boardKey, prefixo);
+            if (grupos.length <= 1) {
+                alert("Mantenha pelo menos uma equipa/grupo ativo.");
+                return;
+            }
+            const filtrados = grupos.filter(x => x.id !== grupoId);
+            await salvarGruposBoard(boardKey, filtrados);
+            mostrarToast("Equipa/grupo removido.");
+        };
+
+        window.adicionarEquipaTorneio = async () => {
+            const torneioId = document.getElementById('sel-torneio-eq').value;
+            if (!torneioId) return;
+            const boardKey = `torneio_${torneioId}`;
+            const grupos = obterGruposBoard(boardKey, "Equipa");
+            grupos.push({
+                id: 'g_' + Date.now(),
+                nome: `Equipa ${grupos.length + 1}`,
+                treinadorId: '',
+                atletaIds: []
+            });
+            await salvarGruposBoard(boardKey, grupos);
+            mostrarToast("Nova equipa adicionada!");
+        };
+
+        window.adicionarGrupoTreino = async () => {
+            const polo = document.getElementById('sel-polo-treino').value;
+            const boardKey = `treino_${polo.replace(/\s+/g, '_')}`;
+            const grupos = obterGruposBoard(boardKey, "Grupo");
+            grupos.push({
+                id: 'g_' + Date.now(),
+                nome: `Grupo ${grupos.length + 1}`,
+                treinadorId: '',
+                atletaIds: []
+            });
+            await salvarGruposBoard(boardKey, grupos);
+            mostrarToast("Novo grupo de treino adicionado!");
+        };
+
+        window.renderizarBoardTorneio = () => {
+            const torneioId = document.getElementById('sel-torneio-eq').value;
+            const t = torneios.find(x => x.id === torneioId);
+            if (!t) {
+                renderizarBoard({ wrapperId: 'board-torneio-wrapper', boardKey: '' });
+                return;
+            }
+
+            const idsAut = inscricoes
+                .filter(i => i.torneioId === torneioId && i.status === 'autorizado')
+                .map(i => i.atletaId);
+
+            const confirmados = atletas
+                .filter(a => idsAut.includes(a.id))
+                .sort((a, b) => a.nome.localeCompare(b.nome));
+
+            renderizarBoard({
+                wrapperId: 'board-torneio-wrapper',
+                boardKey: `torneio_${torneioId}`,
+                atletasDisponiveis: confirmados,
+                escContexto: (t.escalao || "").trim(),
+                prefixoGrupo: "Equipa"
+            });
+        };
+
+        window.renderizarBoardTreino = () => {
+            const polo = document.getElementById('sel-polo-treino').value;
+            const esc = document.getElementById('sel-esc-treino').value;
+
+            const filtrados = atletas
+                .filter(a => {
+                    const matchPolo = normalizarPolo(a.polo) === polo;
+                    const matchEsc = esc === "TODOS" || (a.escalao || "").trim() === esc;
+                    return matchPolo && matchEsc;
+                })
+                .sort((a, b) => a.nome.localeCompare(b.nome));
+
+            renderizarBoard({
+                wrapperId: 'board-treino-wrapper',
+                boardKey: `treino_${polo.replace(/\s+/g, '_')}`,
+                atletasDisponiveis: filtrados,
+                escContexto: esc,
+                prefixoGrupo: "Grupo"
+            });
+        };
+
+        // ================= WHATSAPP & IMPRESSÃO / PDF =================
+        function obterDadosExportacao(modo) {
+            if (modo === 'torneio') {
+                const torneioId = document.getElementById('sel-torneio-eq').value;
+                const t = torneios.find(x => x.id === torneioId);
+                if (!t) return null;
+                const idsAut = inscricoes.filter(i => i.torneioId === torneioId && i.status === 'autorizado').map(i => i.atletaId);
+                const pool = atletas.filter(a => idsAut.includes(a.id));
+                return {
+                    titulo: `${t.escalao} — ${t.nome}`,
+                    subtitulo: `📅 ${formatarData(t.data)} • 📍 ${t.pavilhao}`,
+                    boardKey: `torneio_${torneioId}`,
+                    prefixo: "Equipa",
+                    pool: pool,
+                    escContexto: (t.escalao || "").trim()
+                };
+            } else {
+                const polo = document.getElementById('sel-polo-treino').value;
+                const esc = document.getElementById('sel-esc-treino').value;
+                const pool = atletas.filter(a => normalizarPolo(a.polo) === polo && (esc === "TODOS" || (a.escalao || "").trim() === esc));
+                return {
+                    titulo: `Grupos de Treino — ${polo}`,
+                    subtitulo: `Escalão: ${esc === "TODOS" ? "Minis A e Minis B" : esc}`,
+                    boardKey: `treino_${polo.replace(/\s+/g, '_')}`,
+                    prefixo: "Grupo",
+                    pool: pool,
+                    escContexto: esc
+                };
+            }
+        }
+
+        window.copiarWhatsAppBoard = (modo) => {
+            const info = obterDadosExportacao(modo);
+            if (!info) return;
+            const grupos = obterGruposBoard(info.boardKey, info.prefixo);
+
+            let texto = `🏐 *${info.titulo}*\n${info.subtitulo}\n\n`;
+            grupos.forEach(g => {
+                const tr = treinadores.find(x => x.id === g.treinadorId);
+                const membros = (g.atletaIds || []).map(id => info.pool.find(a => a.id === id)).filter(Boolean);
+                if (membros.length === 0 && !tr) return;
+
+                texto += `*${g.nome}*${tr ? ` (Treinador: ${tr.nome})` : ''}\n`;
+                if (membros.length === 0) {
+                    texto += `• Sem atletas atribuídos\n`;
+                } else {
+                    membros.forEach((a, idx) => {
+                        const escA = (a.escalao || "").trim();
+                        const extra = (info.escContexto && info.escContexto !== "TODOS" && escA !== info.escContexto) ? ` (${escA})` : '';
+                        texto += `${idx + 1}. ${a.nome}${extra}\n`;
+                    });
+                }
+                texto += `\n`;
+            });
+
+            navigator.clipboard.writeText(texto.trim()).then(() => {
+                mostrarToast("📋 Distribuição copiada para o WhatsApp!");
+            });
+        };
+
+        window.imprimirBoard = (modo) => {
+            const info = obterDadosExportacao(modo);
+            if (!info) return;
+            const grupos = obterGruposBoard(info.boardKey, info.prefixo);
+            const logoUrl = new URL('logo.png', window.location.href).href;
+            const dataEmissao = new Date().toLocaleDateString('pt-PT', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+
+            const cardsHtml = grupos.map(g => {
+                const tr = treinadores.find(x => x.id === g.treinadorId);
+                const membros = (g.atletaIds || []).map(id => info.pool.find(a => a.id === id)).filter(Boolean);
+                return `
+                    <div class="print-team-card">
+                        <div class="ptc-header">
+                            <strong>${g.nome}</strong>
+                            <span>${membros.length} atleta(s)</span>
+                        </div>
+                        <div class="ptc-coach">Treinador/a: <strong>${tr ? tr.nome : 'A definir'}</strong></div>
+                        <table>
+                            <thead>
+                                <tr><th style="width:30px;">#</th><th>Atleta</th><th>Escalão</th></tr>
+                            </thead>
+                            <tbody>
+                                ${membros.length === 0
+                                    ? `<tr><td colspan="3" style="color:#6b7280; text-align:center;">Sem atletas atribuídos</td></tr>`
+                                    : membros.map((a, i) => `
+                                        <tr>
+                                            <td>${i + 1}</td>
+                                            <td><strong>${a.nome}</strong></td>
+                                            <td>${a.escalao}</td>
+                                        </tr>
+                                    `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+            }).join('');
+
+            const w = window.open('', '_blank', 'width=1024,height=800');
+            if (!w) {
+                alert("Permita pop-ups para abrir a folha de impressão.");
+                return;
+            }
+            w.document.write(`
+                <!DOCTYPE html>
+                <html lang="pt-PT">
+                <head>
+                    <meta charset="UTF-8">
+                    <title>${info.titulo}</title>
+                    <style>
+                        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
+                        body { background: #e5e7eb; padding: 16px; color: #111827; }
+                        .toolbar { max-width: 960px; margin: 0 auto 14px auto; background: #111827; color: white; padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; }
+                        .toolbar button { background: white; color: #111827; border: none; padding: 8px 16px; border-radius: 8px; font-weight: 700; cursor: pointer; }
+                        .sheet { max-width: 960px; margin: 0 auto; background: white; padding: 28px; border-radius: 12px; }
+                        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #111827; padding-bottom: 14px; margin-bottom: 18px; }
+                        .brand { display: flex; align-items: center; gap: 12px; }
+                        .brand img { height: 48px; width: 48px; object-fit: contain; }
+                        .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+                        .print-team-card { border: 1px solid #d1d5db; border-radius: 10px; overflow: hidden; break-inside: avoid; }
+                        .ptc-header { background: #111827; color: white; padding: 9px 12px; display: flex; justify-content: space-between; font-size: 0.95rem; }
+                        .ptc-coach { background: #f3f4f6; padding: 7px 12px; font-size: 0.84rem; border-bottom: 1px solid #d1d5db; }
+                        table { width: 100%; border-collapse: collapse; font-size: 0.84rem; }
+                        th { text-align: left; padding: 6px 10px; background: #f9fafb; border-bottom: 1px solid #e5e7eb; font-size: 0.72rem; text-transform: uppercase; }
+                        td { padding: 7px 10px; border-bottom: 1px solid #f3f4f6; }
+                        @media print {
+                            body { background: white; padding: 0; }
+                            .toolbar { display: none !important; }
+                            .sheet { padding: 0; max-width: 100%; }
+                            .ptc-header, .ptc-coach { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="toolbar">
+                        <span>Folha de Equipas / Treinadores</span>
+                        <button onclick="window.print()">🖨️ Imprimir / Guardar PDF</button>
+                    </div>
+                    <div class="sheet">
+                        <div class="header">
+                            <div class="brand">
+                                <img src="${logoUrl}" onerror="this.style.display='none'">
+                                <div>
+                                    <h1 style="font-size:1.2rem;">${info.titulo}</h1>
+                                    <p style="font-size:0.85rem; color:#4b5563;">${info.subtitulo}</p>
+                                </div>
+                            </div>
+                            <div style="text-align:right; font-size:0.78rem; color:#4b5563;">Emitido em:<br>${dataEmissao}</div>
+                        </div>
+                        <div class="grid">${cardsHtml}</div>
+                    </div>
+                </body>
+                </html>
+            `);
+            w.document.close();
+        };
+
+        function formatarData(iso) {
+            if (!iso) return "-";
+            const [y, m, d] = iso.split('-');
+            return `${d}/${m}/${y}`;
+        }
+    </script>
+</body>
+</html>
