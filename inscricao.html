@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>FC Académicos · Ficha de Inscrição Mini-Voleibol</title>
+  <meta name="title" content="FC Académicos · Ficha de Inscrição Mini-Voleibol">
+  <meta name="description" content="Formulário oficial de pré-inscrição de atletas Mini-Voleibol (Minis A e Minis B) do FC Académicos - Época 2026/2027.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="FC Académicos · Ficha de Inscrição Mini-Voleibol">
+  <meta property="og:description" content="Formulário oficial de inscrição de atletas Mini-Voleibol (Minis A e Minis B) — Época 2026/2027.">
+  <meta property="og:image" content="https://hamilttonjunnior.github.io/torneiosminis/logo.png">
+
+  <link rel="icon" type="image/png" href="logo.png">
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- html2pdf.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <!-- SDK do Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+  <style>
+    body {
+      background-color: #0f172a;
+      color: #334155;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    }
+    
+    .label-title {
+      font-size: 0.725rem;
+      font-weight: 700;
+      color: #475569;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      margin-bottom: 0.4rem;
+      display: block;
+    }
+
+    .form-input-clean {
+      width: 100%;
+      border: 1px solid #cbd5e1;
+      border-radius: 0.5rem;
+      padding: 0.65rem 0.85rem;
+      font-size: 0.875rem;
+      color: #0f172a;
+      background-color: #f8fafc;
+      outline: none;
+      transition: all 0.2s ease-in-out;
+    }
+
+    .form-input-clean:focus {
+      background-color: #ffffff;
+      border-color: #0284c7;
+      box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #0f172a;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid #e2e8f0;
+      margin-bottom: 1.25rem;
+    }
+
+    .sub-text {
+      font-size: 0.725rem;
+      color: #64748b;
+      margin-top: 0.35rem;
+      line-height: 1.25;
+    }
+
+    .pdf-document {
+      background: #ffffff;
+      color: #1e293b;
+      padding: 1.25rem;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+    }
+
+    @media (min-width: 640px) {
+      .pdf-document {
+        padding: 2rem;
+      }
+    }
+
+    .pdf-header {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1rem;
+      border-bottom: 2px solid #0f172a;
+      padding-bottom: 1rem;
+      margin-bottom: 1.25rem;
+    }
+
+    @media (min-width: 640px) {
+      .pdf-header {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+      }
+    }
+
+    .pdf-section-title {
+      font-size: 0.75rem;
+      font-weight: 800;
+      color: #0284c7;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      border-bottom: 1px solid #e2e8f0;
+      padding-bottom: 0.25rem;
+      margin-top: 1rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .pdf-field-label {
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .pdf-field-value {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #0f172a;
+      margin-top: 0.1rem;
+      word-break: break-word;
+    }
+
+    @media print {
+      .no-print { display: none !important; }
+      body { background: white !important; color: black !important; padding: 0 !important; }
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col bg-slate-900">
+
+  <!-- CABEÇALHO ESCURO -->
+  <header class="bg-[#0b0f19] text-white py-6 md:py-8 px-4 sm:px-6 md:px-12 border-b border-slate-800/80 no-print">
+    <div class="max-w-5xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+      
+      <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-5 w-full md:w-auto">
+        <div class="w-14 h-14 sm:w-16 sm:h-16 bg-white rounded-2xl p-2 flex items-center justify-center shadow-lg shrink-0">
+          <img id="club-logo" src="logo.png" alt="FC Académicos" class="max-h-full max-w-full object-contain" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2280%22>🏐</text></svg>'">
+        </div>
+        <div>
+          <div class="text-[10px] sm:text-[11px] font-bold tracking-widest text-sky-400 uppercase">FC ACADÉMICOS · MINI-VOLEIBOL 2026 / 2027</div>
+          <h1 class="text-xl sm:text-2xl md:text-3xl font-extrabold text-white mt-0.5 tracking-tight">Ficha de Inscrição — Minis</h1>
+          <p class="text-xs text-slate-400 mt-1 max-w-2xl">
+            Preencha os dados do/a atleta. O pedido ficará sujeito a validação pela equipa técnica e será gerada a ficha oficial em PDF.
+          </p>
+        </div>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-2 w-full md:w-auto justify-end">
+        <button type="button" onclick="abrirModalRecuperar()" class="px-3.5 py-2 rounded-lg border border-sky-500/50 bg-sky-950/60 text-xs font-semibold text-sky-300 hover:bg-sky-900 transition">
+          📄 Recuperar Ficha / PDF
+        </button>
+        <a href="pais.html" class="px-3.5 py-2 rounded-lg border border-slate-700 bg-slate-900 text-xs font-semibold text-white hover:bg-slate-800 transition">
+          Autorizar Torneios
+        </a>
+        <a href="lista.html" class="px-3.5 py-2 rounded-lg border border-slate-700 bg-slate-800 text-xs font-semibold text-white hover:bg-slate-700 transition">
+          Lista Confirmados
+        </a>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- CONTEÚDO PRINCIPAL -->
+  <main class="flex-1 py-6 sm:py-10 px-3 sm:px-6 bg-slate-100 text-slate-800">
+    <div class="max-w-5xl mx-auto">
+
+      <div class="bg-white rounded-2xl sm:rounded-3xl shadow-xl border border-slate-200/90 p-4 sm:p-8 md:p-12 max-w-5xl mx-auto">
+        
+        <form id="athleteForm" onsubmit="submeterPreInscricao(event)" class="space-y-6 sm:space-y-8">
+          
+          <!-- SECÇÃO 1: DADOS DO ATLETA -->
+          <div>
+            <div class="section-header">
+              <span>👤</span> Dados Pessoais, Sexo & Escalão
+            </div>
+
+            <div class="space-y-4 sm:space-y-6">
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+                <div class="md:col-span-2">
+                  <label class="label-title">NOME COMPLETO DO/A ATLETA *</label>
+                  <input type="text" id="nome" required placeholder="Nome como consta no documento de identificação" class="form-input-clean">
+                </div>
+                <div>
+                  <label class="label-title">SEXO *</label>
+                  <select id="genero" required class="form-input-clean">
+                    <option value="">Selecione</option>
+                    <option value="Feminino">Feminino</option>
+                    <option value="Masculino">Masculino</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+                <div>
+                  <label class="label-title">DATA DE NASCIMENTO *</label>
+                  <input type="date" id="dataNascimento" required onchange="sugerirEscalaoPorData()" class="form-input-clean">
+                </div>
+                <div>
+                  <label class="label-title">ESCALÃO PRETENDIDO *</label>
+                  <select id="escalao" required class="form-input-clean">
+                    <option value="">Selecione o escalão</option>
+                    <option value="Minis A">Minis A (8–10 anos)</option>
+                    <option value="Minis B">Minis B (11–12 anos)</option>
+                  </select>
+                  <p class="sub-text" id="hint-escalao">A equipa técnica confirmará o escalão após avaliação.</p>
+                </div>
+                <div>
+                  <label class="label-title">POLO DE TREINO PRETENDIDO *</label>
+                  <select id="polo" required class="form-input-clean">
+                    <option value="">Selecione o polo</option>
+                    <option value="Polo de Manhente">Polo de Manhente</option>
+                    <option value="Polo Barcelos">Polo Barcelos (Gonçalo Nunes)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                <div>
+                  <label class="label-title">LICENÇA N.° (SE JÁ FEDERADO/A)</label>
+                  <input type="text" id="licenca" placeholder="Ex.: 123456" class="form-input-clean">
+                  <p class="sub-text">Apenas para atletas já inscritos anteriormente na FPV.</p>
+                </div>
+                <div>
+                  <label class="label-title">COMPROMISSO DESPORTO ESCOLAR *</label>
+                  <select id="compromissoEscolar" required class="form-input-clean">
+                    <option value="">Selecione</option>
+                    <option value="Sim">Sim (Compromete-se a participar)</option>
+                    <option value="Não">Não</option>
+                    <option value="N/A">Não Aplicável</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                <div>
+                  <label class="label-title">NACIONALIDADE *</label>
+                  <input type="text" id="nacionalidade" value="Portuguesa" required class="form-input-clean">
+                </div>
+                <div>
+                  <label class="label-title">NATURALIDADE *</label>
+                  <input type="text" id="naturalidade" placeholder="Concelho / freguesia" required class="form-input-clean">
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                <div>
+                  <label class="label-title">NOME DO PAI</label>
+                  <input type="text" id="nomePai" class="form-input-clean">
+                </div>
+                <div>
+                  <label class="label-title">NOME DA MÃE</label>
+                  <input type="text" id="nomeMae" class="form-input-clean">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- SECÇÃO 2: DOCUMENTOS E IDENTIFICAÇÃO -->
+          <div>
+            <div class="section-header">
+              <span>🪪</span> Documentos de Identificação & Saúde
+            </div>
+
+            <div class="space-y-4 sm:space-y-6">
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+                <div>
+                  <label class="label-title">TIPO DE DOCUMENTO *</label>
+                  <select id="docTipo" required class="form-input-clean">
+                    <option value="CC">Cartão de Cidadão (CC)</option>
+                    <option value="TR">Título de Residência (TR)</option>
+                    <option value="Passaporte">Passaporte</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="label-title">N.º DO DOCUMENTO *</label>
+                  <input type="text" id="documentoId" required placeholder="Número completo" class="form-input-clean">
+                </div>
+                <div>
+                  <label class="label-title">VALIDADE DO DOCUMENTO *</label>
+                  <input type="date" id="validadeDoc" required class="form-input-clean">
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                <div>
+                  <label class="label-title">NÚMERO IDENTIFICAÇÃO FISCAL (NIF) *</label>
+                  <input type="text" id="nif" required maxlength="9" placeholder="9 dígitos" class="form-input-clean">
+                </div>
+                <div>
+                  <label class="label-title">NÚMERO DE UTENTE DE SAÚDE *</label>
+                  <input type="text" id="numeroUtente" required class="form-input-clean">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- SECÇÃO 3: CONTACTOS E RESIDÊNCIA -->
+          <div>
+            <div class="section-header">
+              <span>📍</span> Contactos & Localização
+            </div>
+
+            <div class="space-y-4 sm:space-y-6">
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+                <div>
+                  <label class="label-title">CONTACTO TELEFÓNICO (WHATSAPP) *</label>
+                  <input type="tel" id="telefone" required placeholder="+351 900 000 000" class="form-input-clean">
+                </div>
+                <div>
+                  <label class="label-title">E-MAIL DO ENCARREGADO</label>
+                  <input type="email" id="email" placeholder="exemplo@email.com" class="form-input-clean">
+                </div>
+                <div>
+                  <label class="label-title">CÓDIGO POSTAL *</label>
+                  <input type="text" id="codigoPostal" required placeholder="4750-000" pattern="\d{4}-\d{3}" class="form-input-clean">
+                </div>
+              </div>
+
+              <div>
+                <label class="label-title">MORADA COMPLETA *</label>
+                <textarea id="morada" required rows="2" placeholder="Rua, n.º, andar, localidade" class="form-input-clean resize-none"></textarea>
+              </div>
+
+              <div>
+                <label class="label-title">OBSERVAÇÕES DE SAÚDE / ALERGIAS <span class="font-normal text-slate-400">(Opcional)</span></label>
+                <input type="text" id="observacoesSaude" placeholder="Ex.: Asma, alergia medicamentosa, etc. (deixar em branco se não houver)" class="form-input-clean">
+              </div>
+            </div>
+          </div>
+
+          <!-- BOTÕES DE AÇÃO -->
+          <div class="no-print pt-6 sm:pt-8 border-t border-slate-200 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+            <button type="submit" id="btnSalvar" class="w-full sm:w-auto bg-slate-900 hover:bg-black text-white font-semibold text-xs px-6 py-3.5 rounded-xl shadow-md flex items-center justify-center gap-2 transition">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 002-2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg>
+              <span id="btnSalvarTexto">Submeter Inscrição & Gerar PDF</span>
+            </button>
+
+            <button type="button" onclick="limparFormulario()" class="w-full sm:w-auto bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold text-xs px-5 py-3.5 rounded-xl flex items-center justify-center gap-1.5 transition sm:ml-auto">
+              Limpar Formulário
+            </button>
+          </div>
+
+        </form>
+
+      </div>
+
+    </div>
+  </main>
+
+  <!-- MODAL: RECUPERAR FICHA PELO NIF / DOCUMENTO -->
+  <div id="modal-recuperar" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 no-print">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-100">
+      <div class="flex justify-between items-center border-b border-slate-100 pb-3 mb-4">
+        <h3 class="text-base font-extrabold text-slate-900">📄 Recuperar Ficha & Gerar PDF</h3>
+        <button onclick="fecharModalRecuperar()" class="text-slate-400 hover:text-slate-700 font-bold text-2xl px-1">&times;</button>
+      </div>
+      <p class="text-xs text-slate-500 mb-4">
+        Já preencheu a inscrição anteriormente e precisa de voltar a descarregar o PDF? Introduza o <strong>NIF</strong> ou o <strong>N.º de Documento</strong> do/a atleta:
+      </p>
+      <div class="space-y-3">
+        <input type="text" id="input-busca-nif" placeholder="Ex: 299999999" class="form-input-clean" onkeypress="if(event.key==='Enter') buscarFichaParaPdf()">
+        <button type="button" id="btn-buscar-ficha" onclick="buscarFichaParaPdf()" class="w-full bg-slate-900 hover:bg-black text-white font-semibold text-xs py-3 rounded-xl shadow transition">
+          🔍 Procurar Ficha de Inscrição
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL POPUP: FICHA OFICIAL GERADA / PDF -->
+  <div id="modal-ficha" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-2 sm:p-4 overflow-y-auto no-print">
+    <div id="modal-container-card" class="bg-white rounded-2xl sm:rounded-3xl max-w-3xl w-full p-4 sm:p-6 md:p-8 max-h-[92vh] overflow-y-auto relative shadow-2xl border border-slate-100">
+      
+      <div class="flex justify-between items-center border-b border-slate-100 pb-3 mb-4">
+        <div>
+          <span id="modal-status-pill" class="text-[10px] font-bold uppercase tracking-wider text-amber-700 bg-amber-100 px-2.5 py-1 rounded-full">⏳ Pré-Inscrição Submetida</span>
+          <h3 class="text-base sm:text-lg font-extrabold text-slate-900 mt-1">Ficha Oficial de Inscrição (Minis)</h3>
+        </div>
+        <button onclick="fecharModal()" class="text-slate-400 hover:text-slate-700 font-bold text-2xl px-2">&times;</button>
+      </div>
+
+      <div id="conteudo-modal-ficha" class="pdf-document border rounded-2xl shadow-sm"></div>
+
+      <div class="mt-6 flex flex-col sm:flex-row justify-end gap-2.5 border-t border-slate-100 pt-4">
+        <button onclick="fecharModal()" class="w-full sm:w-auto px-5 py-2.5 text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition">
+          Fechar
+        </button>
+        <button id="btn-export-modal-pdf" onclick="" class="w-full sm:w-auto px-6 py-2.5 text-xs font-semibold text-white bg-slate-900 hover:bg-black rounded-xl shadow-md transition flex items-center justify-center gap-2">
+          📄 Descarregar Ficha em PDF
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyDHrazgKg6ezFPMyclQyc8keXXGV6QGG38",
+      authDomain: "inscricoesminis.firebaseapp.com",
+      projectId: "inscricoesminis",
+      storageBucket: "inscricoesminis.firebasestorage.app",
+      messagingSenderId: "1005618476458",
+      appId: "1:1005618476458:web:0675310fae2bfd989ae7d3",
+      measurementId: "G-6QYJ3MC92P"
+    };
+
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+    const db = firebase.firestore();
+
+    function normalizarTexto(str) {
+      return String(str || "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/\s+/g, " ")
+        .trim()
+        .toLowerCase();
+    }
+
+    function sugerirEscalaoPorData() {
+      const val = document.getElementById('dataNascimento').value;
+      if (!val) return;
+      const ano = parseInt(val.slice(0, 4), 10);
+      const sel = document.getElementById('escalao');
+      const hint = document.getElementById('hint-escalao');
+
+      if (ano >= 2016) {
+        sel.value = "Minis A";
+        hint.textContent = "Sugerido automaticamente pelo ano de nascimento (Minis A).";
+      } else if (ano === 2014 || ano === 2015) {
+        sel.value = "Minis B";
+        hint.textContent = "Sugerido automaticamente pelo ano de nascimento (Minis B).";
+      } else {
+        hint.textContent = "A equipa técnica confirmará o escalão adequado.";
+      }
+    }
+
+    // Recuperar ficha pelo NIF ou Documento
+    function abrirModalRecuperar() {
+      document.getElementById('input-busca-nif').value = '';
+      document.getElementById('modal-recuperar').classList.remove('hidden');
+      setTimeout(() => document.getElementById('input-busca-nif').focus(), 100);
+    }
+
+    function fecharModalRecuperar() {
+      document.getElementById('modal-recuperar').classList.add('hidden');
+    }
+
+    async function buscarFichaParaPdf() {
+      const termo = document.getElementById('input-busca-nif').value.trim().toUpperCase();
+      if (!termo) {
+        alert("Por favor, insira o NIF ou número do documento.");
+        return;
+      }
+
+      const btn = document.getElementById('btn-buscar-ficha');
+      btn.disabled = true;
+      btn.textContent = "A procurar...";
+
+      try {
+        const snap = await db.collection('pre_inscricoes').get();
+        const encontrada = snap.docs
+          .map(d => d.data())
+          .find(p => (p.nif && p.nif.trim() === termo) || (p.documentoId && p.documentoId.trim().toUpperCase() === termo));
+
+        if (!encontrada) {
+          alert("Nenhuma inscrição encontrada com esse NIF ou número de documento. Verifique os dígitos ou preencha o formulário.");
+          return;
+        }
+
+        fecharModalRecuperar();
+        abrirFichaModalComDados(encontrada);
+      } catch (err) {
+        alert("Erro ao procurar ficha: " + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "🔍 Procurar Ficha de Inscrição";
+      }
+    }
+
+    async function submeterPreInscricao(event) {
+      event.preventDefault();
+      const btn = document.getElementById('btnSalvar');
+      const btnTexto = document.getElementById('btnSalvarTexto');
+      btn.disabled = true;
+      btnTexto.innerText = "A verificar e submeter...";
+
+      const nome = document.getElementById('nome').value.trim();
+      const nif = document.getElementById('nif').value.trim();
+      const docNum = document.getElementById('documentoId').value.trim().toUpperCase();
+
+      try {
+        const [snapPre, snapAtletas] = await Promise.all([
+          db.collection('pre_inscricoes').where('status', '==', 'pendente').get(),
+          db.collection('atletas').get()
+        ]);
+
+        const nomeNorm = normalizarTexto(nome);
+        const jaPendente = snapPre.docs.some(d => normalizarTexto(d.data().nome) === nomeNorm || (nif && d.data().nif === nif));
+        if (jaPendente) {
+          alert("⚠️ Já existe uma pré-inscrição pendente para este atleta! Caso precise de reimprimir o PDF, clique em 'Recuperar Ficha / PDF' no topo da página.");
+          return;
+        }
+
+        const jaAtleta = snapAtletas.docs.some(d => normalizarTexto(d.data().nome) === nomeNorm);
+        if (jaAtleta) {
+          alert("ℹ️ Este atleta já se encontra registado na base oficial do clube! Caso precise de reimprimir o PDF, clique em 'Recuperar Ficha / PDF' no topo.");
+          return;
+        }
+
+        const dadosInscricao = {
+          nome: nome,
+          genero: document.getElementById('genero').value,
+          dataNascimento: document.getElementById('dataNascimento').value,
+          escalao: document.getElementById('escalao').value,
+          polo: document.getElementById('polo').value,
+          licenca: document.getElementById('licenca').value.trim(),
+          compromissoEscolar: document.getElementById('compromissoEscolar').value,
+          nacionalidade: document.getElementById('nacionalidade').value.trim(),
+          naturalidade: document.getElementById('naturalidade').value.trim(),
+          nomePai: document.getElementById('nomePai').value.trim(),
+          nomeMae: document.getElementById('nomeMae').value.trim(),
+          docTipo: document.getElementById('docTipo').value,
+          documentoId: docNum,
+          validadeDoc: document.getElementById('validadeDoc').value,
+          nif: nif,
+          numeroUtente: document.getElementById('numeroUtente').value.trim(),
+          telefone: document.getElementById('telefone').value.trim(),
+          email: document.getElementById('email').value.trim(),
+          codigoPostal: document.getElementById('codigoPostal').value.trim(),
+          morada: document.getElementById('morada').value.trim(),
+          observacoesSaude: document.getElementById('observacoesSaude').value.trim(),
+          status: 'pendente',
+          criadoEm: firebase.firestore.FieldValue.serverTimestamp(),
+          submetidoEmISO: new Date().toISOString()
+        };
+
+        await db.collection('pre_inscricoes').add(dadosInscricao);
+
+        abrirFichaModalComDados(dadosInscricao);
+        limparFormulario();
+      } catch (error) {
+        console.error("Erro no Firebase:", error);
+        alert('Erro ao submeter inscrição. Verifique a sua ligação e tente novamente.');
+      } finally {
+        btn.disabled = false;
+        btnTexto.innerText = "Submeter Inscrição & Gerar PDF";
+      }
+    }
+
+    function abrirFichaModalComDados(atleta) {
+      const container = document.getElementById('conteudo-modal-ficha');
+      const pill = document.getElementById('modal-status-pill');
+
+      if (atleta.status === 'aprovado') {
+        pill.textContent = '✅ Inscrição Validada pelo Clube';
+        pill.className = 'text-[10px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-100 px-2.5 py-1 rounded-full';
+      } else {
+        pill.textContent = '⏳ Pré-Inscrição Submetida • Aguarda Validação';
+        pill.className = 'text-[10px] font-bold uppercase tracking-wider text-amber-700 bg-amber-100 px-2.5 py-1 rounded-full';
+      }
+      
+      container.innerHTML = `
+        <div class="pdf-header">
+          <div class="flex items-center gap-3 sm:gap-4">
+            <img src="logo.png" class="w-12 h-12 sm:w-14 sm:h-14 object-contain" alt="FC Académicos" onerror="this.style.display='none'">
+            <div>
+              <div class="text-[9px] sm:text-[10px] font-bold tracking-widest text-slate-500 uppercase">FC ACADÉMICOS · MINI-VOLEIBOL 2026/2027</div>
+              <h2 class="text-base sm:text-lg font-black text-slate-900 uppercase tracking-tight">Ficha de Inscrição de Atleta</h2>
+            </div>
+          </div>
+          <div class="text-left sm:text-right">
+            <span class="text-[9px] sm:text-[10px] font-extrabold text-slate-400 block uppercase tracking-wider">Escalão / Polo</span>
+            <span class="text-xs sm:text-sm font-black text-sky-600 uppercase">${atleta.escalao || '-'} • ${atleta.polo || '-'}</span>
+          </div>
+        </div>
+
+        <div>
+          <div class="pdf-section-title">1. Dados Pessoais do Atleta</div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5 sm:gap-3">
+            <div class="col-span-1 sm:col-span-2">
+              <div class="pdf-field-label">Nome Completo</div>
+              <div class="pdf-field-value text-sm sm:text-base">${atleta.nome || '-'}</div>
+            </div>
+            <div>
+              <div class="pdf-field-label">Sexo</div>
+              <div class="pdf-field-value">${atleta.genero || '-'}</div>
+            </div>
+            <div>
+              <div class="pdf-field-label">Data de Nascimento</div>
+              <div class="pdf-field-value">${atleta.dataNascimento || '-'}</div>
+            </div>
+            <div>
+              <div class="pdf-field-label">Licença FPV</div>
+              <div class="pdf-field-value">${atleta.licenca || 'Nova Inscrição'}</div>
+            </div>
+            <div>
+              <div class="pdf-field-label">Desporto Escolar</div>
+              <div class="pdf-field-value">${atleta.compromissoEscolar || '-'}</div>
+            </div>
+            <div>
+              <div class="pdf-field-label">Nacionalidade</div>
+              <div class="pdf-field-value">${atleta.nacionalidade || '-'}</div>
+            </div>
+            <div>
+              <div class="pdf-field-label">Naturalidade</div>
+              <div class="pdf-field-value">${atleta.naturalidade || '-'}</div>
+            </div>
+            <div>
+              <div class="pdf-field-label">Contacto Telefónico</div>
+              <div class="pdf-field-value">${atleta.telefone || '-'}</div>
+            </div>
+            <div>
+              <div class="pdf-field-label">Nome do Pai</div>
+              <div class="pdf-field-value">${atleta.nomePai || '-'}</div>
+            </div>
+            <div class="col-span-1 sm:col-span-2">
+              <div class="pdf-field-label">Nome da Mãe</div>
+              <div class="pdf-field-value">${atleta.nomeMae || '-'}</div>
+            </div>
+          </div>
+
+          <div class="pdf-section-title">2. Documentação & Saúde</div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-3">
+            <div>
+              <div class="pdf-field-label">Doc. Identificação</div>
+              <div class="pdf-field-value">${atleta.docTipo || 'Doc'}: ${atleta.documentoId || '-'}</div>
+            </div>
+            <div>
+              <div class="pdf-field-label">Validade Doc.</div>
+              <div class="pdf-field-value">${atleta.validadeDoc || '-'}</div>
+            </div>
+            <div>
+              <div class="pdf-field-label">NIF</div>
+              <div class="pdf-field-value">${atleta.nif || '-'}</div>
+            </div>
+            <div>
+              <div class="pdf-field-label">N.° Utente de Saúde</div>
+              <div class="pdf-field-value">${atleta.numeroUtente || '-'}</div>
+            </div>
+            ${atleta.observacoesSaude ? `
+              <div class="col-span-1 sm:col-span-2 md:col-span-4">
+                <div class="pdf-field-label">Observações de Saúde</div>
+                <div class="pdf-field-value">${atleta.observacoesSaude}</div>
+              </div>
+            ` : ''}
+          </div>
+
+          <div class="pdf-section-title">3. Residência & Localização</div>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3">
+            <div>
+              <div class="pdf-field-label">Código Postal</div>
+              <div class="pdf-field-value">${atleta.codigoPostal || '-'}</div>
+            </div>
+            <div class="col-span-1 sm:col-span-2">
+              <div class="pdf-field-label">Morada Residencial</div>
+              <div class="pdf-field-value">${atleta.morada || '-'}</div>
+            </div>
+          </div>
+
+          <div class="mt-6 sm:mt-8 pt-4 sm:pt-6 border-t border-slate-200 grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8 text-center text-[10px] text-slate-500">
+            <div>
+              <div class="border-b border-slate-300 mb-1 h-8"></div>
+              <span>Assinatura do Encarregado de Educação</span>
+            </div>
+            <div>
+              <div class="border-b border-slate-300 mb-1 h-8"></div>
+              <span>Validação FC Académicos</span>
+            </div>
+          </div>
+        </div>
+      `;
+
+      document.getElementById('btn-export-modal-pdf').onclick = function() {
+        gerarPDFDiv('conteudo-modal-ficha', atleta.nome);
+      };
+
+      document.getElementById('modal-ficha').classList.remove('hidden');
+    }
+
+    function fecharModal() {
+      document.getElementById('modal-ficha').classList.add('hidden');
+    }
+
+    function limparFormulario() {
+      document.getElementById('athleteForm').reset();
+      document.getElementById('nacionalidade').value = "Portuguesa";
+      document.getElementById('hint-escalao').textContent = "A equipa técnica confirmará o escalão após avaliação.";
+    }
+
+    function gerarPDFDiv(elementId, nomeAtleta) {
+      const element = document.getElementById(elementId);
+      const containerCard = document.getElementById('modal-container-card');
+      const nomeFinal = nomeAtleta || 'Atleta';
+
+      if (containerCard) {
+        containerCard.style.maxHeight = 'none';
+        containerCard.style.overflow = 'visible';
+      }
+
+      const opt = {
+        margin: [6, 6, 6, 6],
+        filename: `Ficha_Inscricao_Minis_${nomeFinal.replace(/\s+/g, '_')}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true, scrollY: 0 },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      };
+
+      html2pdf().set(opt).from(element).save().then(() => {
+        if (containerCard) {
+          containerCard.style.maxHeight = '92vh';
+          containerCard.style.overflowY = 'auto';
+        }
+      });
+    }
+  </script>
+</body>
+</html>
